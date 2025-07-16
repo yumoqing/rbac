@@ -1,0 +1,25 @@
+
+ns = params_kw.copy()
+id = params_kw.id
+if not id or len(id) > 32:
+	id = uuid()
+ns['id'] = id
+db = DBPools()
+async with db.sqlorContext('sage') as sor:
+    r = await sor.C('userapikey', ns.copy())
+    return {
+        "widgettype":"Message",
+        "options":{
+			"user_data":ns,
+            "title":"Add Success",
+            "message":"ok"
+        }
+    }
+
+return {
+    "widgettype":"Error",
+    "options":{
+        "title":"Add Error",
+        "message":"failed"
+    }
+}

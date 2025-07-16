@@ -1,0 +1,24 @@
+
+ns = {
+    'id':params_kw['id'],
+}
+db = DBPools()
+async with db.sqlorContext('sage') as sor:
+    r = await sor.D('userapikey', ns)
+    print('delete success');
+    return {
+        "widgettype":"Message",
+        "options":{
+            "title":"Delete Success",
+            "message":"ok"
+        }
+    }
+
+print('Delete failed');
+return {
+    "widgettype":"Error",
+    "options":{
+        "title":"Delete Error",
+        "message":"failed"
+    }
+}

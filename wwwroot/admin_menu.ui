@@ -1,0 +1,7 @@
+[
+	{
+		"name":"users",
+		"label":"用户管理"
+		"url":"{{entire_url('/rbac/users')}}"
+	}
+]

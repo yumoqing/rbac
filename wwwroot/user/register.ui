@@ -1,0 +1,80 @@
+{
+	"widgettype":"PopupWindow",
+	"options":{
+		"cwidth":22,
+		"height":"75%",
+		"archor":"cc",
+		"auto_open":true
+	},
+	"subwidgets":[
+		{
+			"widgettype":"Form",
+			"options":{
+				"title":"user register",
+				"description":"base info we need is username, password and a cell phone number",
+				
+				"fields":[
+					{
+						"name": "username",
+						"title": "\u7528\u6237\u540d",
+						"type": "str",
+						"length": 255,
+						"uitype": "str",
+						"datatype": "str",
+						"required":true,
+						"label": "\u7528\u6237\u540d"
+					},
+					{
+						"name": "password",
+						"type": "str",
+						"length": 255,
+						"uitype": "password",
+						"datatype": "str",
+						"required":true,
+						"label": "\u5bc6\u7801"
+					},
+					{
+						"name": "cfm_password",
+						"type": "str",
+						"length": 255,
+						"uitype": "password",
+						"datatype": "str",
+						"required":true,
+						"label": "\u5bc6\u7801"
+					},
+					{
+						"name": "email",
+						"title": "\u90ae\u4ef6\u5730\u5740",
+						"type": "str",
+						"length": 255,
+						"uitype": "str",
+						"datatype": "str",
+						"required":true,
+						"label": "\u90ae\u4ef6\u5730\u5740"
+					},
+					{
+						"name": "mobile",
+						"title": "\u624b\u673a",
+						"type": "str",
+						"length": 255,
+						"uitype": "str",
+						"datatype": "str",
+						"required":true,
+						"label": "\u624b\u673a"
+					}
+				]
+			},
+			"binds":[
+				{
+					"wid":"self",
+					"event":"submit",
+					"actiontype":"urlwidget",
+					"target":"self",
+					"options":{
+						"url":"{{entire_url('register.dspy')}}"
+					}
+				}
+			]
+		}
+	]
+}

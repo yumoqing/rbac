@@ -1,0 +1,126 @@
+
+{
+    "widgettype":"Tabular",
+    "options":{
+
+
+		"editable":{
+			"new_data_url":"{{entire_url('add_userapikey.dspy')}}",
+			"delete_data_url":"{{entire_url('delete_userapikey.dspy')}}",
+			"update_data_url":"{{entire_url('update_userapikey.dspy')}}"
+		},
+
+        "data_url":"{{entire_url('./get_userapikey.dspy')}}",
+		"data_method":"GET",
+		"data_params":{{json.dumps(params_kw, indent=4)}},
+		"row_options":{
+
+
+
+
+			"browserfields":{
+    "excloud": [],
+    "cwidth": {}
+},
+
+
+			"editexclouded":[
+    "id"
+],
+
+			"fields":[
+    {
+        "name": "id",
+        "title": "id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "id"
+    },
+    {
+        "name": "providerid",
+        "title": "\u4f9b\u5e94\u5546id",
+        "type": "str",
+        "length": 200,
+        "label": "\u4f9b\u5e94\u5546id",
+		"cwidth":16,
+        "uitype": "code",
+	"cwidth":18,
+        "valueField": "providerid",
+        "textField": "providerid_text",
+        "params": {
+            "dbname": "sage",
+            "table": "organization",
+            "tblvalue": "id",
+            "tbltext": "orgname",
+            "valueField": "providerid",
+            "textField": "providerid_text"
+        },
+        "dataurl": "\/get_code.dspy"
+    },
+    {
+        "name": "customerid",
+        "title": "\u7528\u6237id",
+        "type": "str",
+        "length": 32,
+	"cwidth":18,
+        "default": "0",
+        "label": "\u7528\u6237id",
+		"cwidth":16,
+        "uitype": "code",
+        "valueField": "customerid",
+        "textField": "customerid_text",
+        "params": {
+            "dbname": "sage",
+            "table": "organization",
+            "tblvalue": "id",
+            "tbltext": "orgname",
+            "valueField": "customerid",
+            "textField": "customerid_text"
+        },
+        "dataurl": "\/get_code.dspy"
+    },
+    {
+        "name": "apikey",
+        "title": "api\u5bc6\u94a5",
+        "type": "str",
+        "length": 4000,
+        "default": "0",
+        "cwidth": 18,
+        "uitype": "text",
+        "rows": 4,
+        "datatype": "str",
+        "label": "api\u5bc6\u94a5"
+    },
+    {
+        "name": "secretkey",
+        "title": "\u9644\u5c5e\u5bc6\u94a5",
+        "type": "str",
+        "length": 4000,
+        "cwidth": 18,
+        "uitype": "text",
+        "rows": 4,
+        "datatype": "str",
+        "label": "\u9644\u5c5e\u5bc6\u94a5"
+    },
+    {
+        "name": "rfname",
+        "title": "\u51fd\u6570\u540d",
+        "type": "str",
+        "length": 400,
+        "cwidth": 18,
+        "uitype": "text",
+        "rows": 4,
+        "datatype": "str",
+        "label": "\u51fd\u6570\u540d"
+    }
+]
+        },  
+
+        "page_rows":160,
+        "cache_limit":5
+    }
+
+}

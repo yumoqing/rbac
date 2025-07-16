@@ -1,0 +1,26 @@
+{
+    "models_dir": "${HOME}$/py/rbac/models",
+    "output_dir": "${HOME}$/py/sage/wwwroot/_a/rolepermission",
+    "dbname": "sage",
+    "tblname": "rolepermission",
+	"title":"用户",
+    "params": {
+		"relation":{
+			"outter_field":"permid",
+			"param_field":"roleid"
+		},
+		"noedit":true,
+        "browserfields": {
+            "exclouded": ["id", "roleid"],
+			"alters":{
+				"permid":{
+					"cwidth":60
+				}
+			}
+        },
+        "editexclouded": [
+            "id", "roleid"
+        ],
+        "record_toolbar": null
+    }
+}

@@ -1,0 +1,27 @@
+{
+	"widgettype":"VBox",
+	"options":{
+		"height":"100%"
+	},
+	"subwidgets":[
+		{
+			"widgettype":"Title4",
+			"options":{
+				"otext":"我的角色",
+				"i18n":true
+			}
+		},
+{% set roles = get_user_roles(get_user()) %}
+{% for role in roles %}
+		{
+			"widgettype":"Text",
+			"options":{
+				"text":"{{role}}"
+			}
+		},
+{% endfor %}
+		{
+			"oops":true
+		}
+	]
+}

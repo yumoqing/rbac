@@ -1,0 +1,15 @@
+{
+	"id":"user_panel",
+	"widgettype":"VBox",
+	"options":{
+		"width":"auto"
+	},
+	"subwidgets":[
+		{
+			"widgettype":"urlwidget",
+			"options":{
+				"url":"{{entire_url('user.ui')}}"
+			}
+		}
+	]
+}

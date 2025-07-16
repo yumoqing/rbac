@@ -1,0 +1,17 @@
+{
+    "models_dir": "${HOME}$/py/rbac/models",
+    "output_dir": "${HOME}$/py/sage/wwwroot/_a/userdepartment",
+    "dbname": "sage",
+    "tblname": "userdepartment",
+	"title":"用户",
+    "params": {
+        "browserfields": {
+            "exclouded": ["id", "userid"],
+            "cwidth": {}
+        },
+        "editexclouded": [
+            "id", "userid"
+        ],
+        "record_toolbar": null
+    }
+}

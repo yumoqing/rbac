@@ -1,0 +1,51 @@
+{
+    "models_dir": "${HOME}$/py/rbac/models",
+    "output_dir": "${HOME}$/py/sage/wwwroot/_a/organization",
+    "dbname": "sage",
+    "tblname": "organization",
+	"title":"Organization",
+    "params": {
+		"sortby":"orgname",
+		"editor":{
+			"binds":[
+				{
+					"wid":"province_id",
+					"event":"changed",
+					"actiontype":"script",
+					"target":"city_id",
+					"script":"this.loadData({cond:'parentid=\\''+params.province_id+'\\''})"
+				},
+				{
+					"wid":"city_id",
+					"event":"changed",
+					"actiontype":"script",
+					"target":"distinct_id",
+					"script":"this.loadData({cond:'parentid=\\'' + params.city_id+ '\\''})"
+				}
+			]
+		},
+        "browserfields": {
+            "exclouded": ["id"],
+            "alters": {
+			}
+        },
+        "editexclouded": [
+            "id"
+        ],
+		"subtables":[
+			{
+				"field":"orgid",
+				"title":"Org. type",
+				"url":"../orgtypes",
+				"subtable":"orgtypes"
+			},
+			{
+				"field":"orgid",
+				"title":"Users",
+				"url":"../users",
+				"subtable":"users"
+			}
+		],
+        "record_toolbar": null
+    }
+}

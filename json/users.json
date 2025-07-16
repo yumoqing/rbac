@@ -1,0 +1,28 @@
+{
+    "tblname": "users",
+	"title":"用户",
+    "params": {
+		"sortby":"username",
+		"confidential_fields":["password"],
+		"logined_userorgid":"orgid",
+        "browserfields": {
+            "exclouded": ["id", "password", "orgid", "nick_name" ],
+            "cwidth": {}
+        },
+        "editexclouded": [
+            "id", "nick_name", "orgid"
+        ],
+        "subtables": [
+			{
+				"field":"userid",
+				"title":"用户角色",
+				"subtable":"userrole"
+			},
+			{
+				"field":"userid",
+				"title":"APIKEY",
+				"subtable":"userapp"
+			}
+		]
+    }
+}

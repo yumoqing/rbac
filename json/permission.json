@@ -1,0 +1,21 @@
+{
+    "tblname": "permission",
+	"uitype":"tree",
+	"title":"权限",
+    "params":{
+        "idField":"id",
+        "textField":"path",
+		"sortby":"path",
+        "editable":true,
+        "browserfields":{
+            "alters":{}
+        },  
+        "edit_exclouded_fields":[],
+        "parentField":"parentid",
+        "toolbar":{
+        },  
+        "binds":[
+        ]   
+    }   
+
+}

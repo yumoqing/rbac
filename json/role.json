@@ -1,0 +1,31 @@
+{
+    "models_dir": "${HOME}$/py/rbac/models",
+    "output_dir": "${HOME}$/py/sage/wwwroot/_a/role",
+    "dbname": "sage",
+    "tblname": "role",
+	"title":"角色",
+    "params": {
+		"sortby":"name",
+        "browserfields": {
+            "exclouded": ["id"],
+            "cwidth": {}
+        },
+        "editexclouded": [
+            "id"
+        ],
+        "subtables":[
+			{
+                "field":"roleid",
+                "title":"角色权限",
+                "url":"../rolepermission",
+                "subtable":"rolepermission"
+			},
+			{
+				"field":"roleid",
+				"title":"用户",
+				"url":"../users",
+				"subtable":"users"
+			}
+		]
+    }
+}

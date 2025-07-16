@@ -1,0 +1,14 @@
+{
+    "tblname": "userrole",
+	"title":"用户角色管理",
+    "params": {
+        "browserfields": {
+            "exclouded": ["id", "orgid"],
+            "alters": {}
+        },
+        "editexclouded": [
+            "id",
+			"userid"
+        ]
+    }
+}

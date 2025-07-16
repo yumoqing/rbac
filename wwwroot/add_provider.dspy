@@ -1,0 +1,36 @@
+ns = params_kw.copy()
+id = params_kw.id
+if not id or len(id) > 32:
+	id = uuid()
+ns['id'] = id
+db = DBPools()
+dbname = get_module_dbname('rbac')
+async with db.sqlorContext(dbname) as sor:
+	ownerid = await get_userorgid()
+	await create_org(sor, ns, orgtypes=['customer', 'provider'])
+	if openCustomerAccounts:
+		await openCustomerAccounts(sor, ownerid, orgid)
+	if openProviderAccounts:
+		await openProviderAccounts(sor, ownerid, id)
+	return {
+		"widgettype":"Message",
+		"options":{
+			"user_data":ns,
+			"cwidth":16,
+			"cheight":9,
+			"title":"Add Success",
+			"timeout":3,
+			"message":"ok"
+		}
+	}
+
+return {
+	"widgettype":"Error",
+	"options":{
+		"title":"Add Error",
+		"cwidth":16,
+		"cheight":9,
+		"timeout":3,
+		"message":"failed"
+	}
+}

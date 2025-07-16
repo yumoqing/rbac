@@ -1,0 +1,23 @@
+await forget_user()
+return {
+	"widgettype":"Message",
+	"options":{
+		"title":"Message",
+		"message":"logout success",
+		"auto_open":true,
+		"anthor":"cc",
+		"timeout":3
+	},
+	"binds":[
+		{
+			"wid":"self",
+			"event":"dismissed",
+			"actiontype":"urlwidget",
+			"target":"window",
+			"options":{
+				"url":entire_url('/index.ui')
+			}
+		}
+	]
+}
+

@@ -1,0 +1,26 @@
+ns = params_kw.copy()
+id = params_kw.id
+if not id or len(id) > 32:
+    id = uuid()
+ns['id'] = id
+db = DBPools()
+dbname = get_module_dbname('rbac')
+async with db.sqlorContext(dbname) as sor:
+	ownerid = await get_userorgid()
+	await create_org(sor, ns, orgtypes=['customer', 'reseller'])
+	if openCustomerAccounts:
+		await openCustomerAccounts(sor, ownerid, orgid)
+	if openResellerAccounts:
+		await openResellerAccounts(sor, ownerid, id)
+    return UiMessage(title="Success", message="add reseller success")
+
+return {
+    "widgettype":"Error",
+    "options":{
+        "title":"Add reseller Error",
+        "cwidth":16,
+        "cheight":9,
+        "timeout":3,
+        "message":"failed"
+    }
+}

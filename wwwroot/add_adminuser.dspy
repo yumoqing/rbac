@@ -1,0 +1,23 @@
+if params_kw.get('password') != params_kw.get('chkpassword'):
+	return Error(title='add user error', message='password not match')
+
+ns = params_kw.copy()
+ns['id'] = uuid()
+await rfexe('passowrd', ns)
+user_orgid = await get_userorgid()
+ns['orgid'] = user_orgid
+dbname = await rfexe('get_module_dbname','rbac')
+db = DBPools()
+debug(f'{dbname=}')
+async with db.sqlorContext(dbname) as sor:
+	await sor.C('users',ns.copy())
+	uid = ns['id']
+	ns = {
+		'id':uuid(),
+		'userid':uid,
+		'roleid':'admin'
+	}
+	await sor.C('userrole', ns.copy())
+	return UiMesage(title='Success', message='admin user added')
+return UiError(title='Error', message='Error happened when add admin user')
+		

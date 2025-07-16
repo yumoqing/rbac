@@ -1,0 +1,18 @@
+{
+    "models_dir": "${HOME}$/py/rbac/models",
+    "output_dir": "${HOME}$/py/sage/wwwroot/_a/orgtypes",
+    "dbname": "sage",
+    "tblname": "orgtypes",
+	"title":"Org. type",
+    "params": {
+        "browserfields": {
+            "exclouded": ["id", "orgid"],
+            "cwidth": {}
+        },
+        "editexclouded": [
+            "id",
+			"orgid"
+        ],
+        "record_toolbar": null
+    }
+}
