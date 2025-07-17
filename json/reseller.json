@@ -1,10 +1,10 @@
 {
-    "models_dir": "${HOME}$/py/rbac/models",
-    "output_dir": "${HOME}$/py/sage/wwwroot/_a/organization",
-    "dbname": "sage",
     "tblname": "organization",
-	"title":"Organization",
+	"alias":"reseller",
+	"title":"商户",
     "params": {
+		"get_data_url": "{{entire_url('../get_reseller.dspy')}}",
+		"new_data_url": "{{entire_url('../add_reseller.dspy')}}",
 		"sortby":"orgname",
 		"editor":{
 			"binds":[
@@ -35,9 +35,13 @@
 		"subtables":[
 			{
 				"field":"orgid",
-				"title":"类型管理",
-				"url":"../orgtypes",
+				"title":"机构类型",
 				"subtable":"orgtypes"
+			},
+			{
+				"field":"orgid",
+				"title":"用户",
+				"subtable":"users"
 			}
 		],
         "record_toolbar": null

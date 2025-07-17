@@ -1,11 +1,11 @@
 {
-    "models_dir": "${HOME}$/py/rbac/models",
-    "output_dir": "${HOME}$/py/sage/wwwroot/_a/organization",
-    "dbname": "sage",
     "tblname": "organization",
-	"title":"Organization",
+	"alias":"provider",
+	"title":"供应商",
     "params": {
 		"sortby":"orgname",
+		"get_data_url": "{{entire_url('../get_provider.dspy')}}",
+		"new_data_url": "{{entire_url('../add_provider.dspy')}}",
 		"editor":{
 			"binds":[
 				{
@@ -35,8 +35,7 @@
 		"subtables":[
 			{
 				"field":"orgid",
-				"title":"类型管理",
-				"url":"../orgtypes",
+				"title":"机构类型",
 				"subtable":"orgtypes"
 			}
 		],
