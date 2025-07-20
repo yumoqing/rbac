@@ -24,7 +24,7 @@ async with db.sqlorContext(dbname) as sor:
 		"widgettype":"Message",
 		"options":{
 			"timeout":3,
-			"auto_open":true,
+			"auto_open":True,
 			"title":"Login",
 			"message":"Welcome back"
 		},
