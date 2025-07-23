@@ -110,6 +110,7 @@ async def basic_auth(sor, auth):
 	recs = await sor.sqlExe(sql, {'username':username,'password':password})
 	if len(recs) < 1:
 		return None
+	await user_login(request, recs[0].id, 
 	return recs[0].id
 	
 async def bearer_auth(sor, auth):
