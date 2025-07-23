@@ -95,8 +95,8 @@ async def checkUserPassword(request, username, password):
 		recs = await sor.sqlExe(sql, {'username':username, 'password':password})
 		if len(recs) < 1:
 			return False
-		await user_login(request, recs[0].id, 
-							username=recs[0].username, 
+		await user_login(request, recs[0].id, \
+							username=recs[0].username, \
 							userorgid=recs[0].orgid)
 		return True
 	return False
