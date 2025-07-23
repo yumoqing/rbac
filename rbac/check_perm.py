@@ -95,8 +95,8 @@ async def checkUserPassword(request, username, password):
 		recs = await sor.sqlExe(sql, {'username':username, 'password':password})
 		if len(recs) < 1:
 			return False
-		await user_login(request, recs[0].id, \
-							username=recs[0].username, \
+		await user_login(request, recs[0].id, 
+							username=recs[0].username, 
 							userorgid=recs[0].orgid)
 		return True
 	return False
@@ -111,19 +111,10 @@ async def basic_auth(sor, auth):
 	if len(recs) < 1:
 		return None
 	await user_login(request, recs[0].id, 
+							username=recs[0].username, 
+							userorgid=recs[0].orgid)
 	return recs[0].id
 	
-async def bearer_auth(sor, auth):
-	# apikey = get_apikey_from_token(auth[7:])
-	apikey = auth[7:]
-	if apikey is None:
-		return None
-	sql = "select * from userapp where apikey=${apikey}$ and expired_date > ${today}$"
-	recs = await sor.sqlExe(sql, {"apikey":apikey, 'today': curDateString()})
-	if len(recs) < 1:
-		return None
-	return recs[0].userid
-
 async def getAuthenticationUserid(sor, request):
 	auth = request.headers.get('Authentication')
 	if auth is None:
@@ -168,8 +159,7 @@ where c.userid = ${userid}$
 	return False
 
 registered_auth_methods = {
-	"Basic ": basic_auth,
-	"Bearer ": bearer_auth
+	"Basic ": basic_auth
 }
 
 def register_auth_method(heading, func):
