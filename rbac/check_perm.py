@@ -17,7 +17,7 @@ async def get_user_roles(userid):
 	sql = "select concat(b.orgtypeid, '.', b.name) as name from userrole a, role b where a.userid=${userid}$ and a.roleid = b.id"
 	db = DBPools()
 	roles = []
-	dbname = await get_dbname()
+	dbname = get_dbname()
 	async with db.sqlorContext(dbname) as sor:
 		recs = await sor.sqlExe(sql, {'userid':userid})
 		if len(recs) < 1:
@@ -82,14 +82,15 @@ async def register_user(sor, ns):
 	await create_user(sor, ns)
 	return id
 
-async def get_dbname():
-	rf = RegisterFunction()
-	dbname = await rf.exe('get_module_dbname', 'rbac')
-	return dbname
+def get_dbname():
+	f = get_serverenv('get_module_dbname')
+	if f i None:
+		return None
+	return f('rbac')
 
 async def checkUserPassword(request, username, password):
 	db = DBPools()
-	dbname = await get_dbname()
+	dbname = get_dbname()
 	async with db.sqlorContext(dbname) as sor:
 		sql = "select * from users where username=${username}$ and password=${password}$"
 		recs = await sor.sqlExe(sql, {'username':username, 'password':password})
@@ -134,7 +135,7 @@ right join userrole c on b.roleid = c.roleid
 where c.userid = ${userid}$
 """
 
-	dbname = await get_dbname()
+	dbname = get_dbname()
 	db = DBPools()
 	async with db.sqlorContext(dbname) as sor:
 		if userid is None:
