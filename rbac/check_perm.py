@@ -84,7 +84,7 @@ async def register_user(sor, ns):
 
 def get_dbname():
 	f = get_serverenv('get_module_dbname')
-	if f i None:
+	if f is None:
 		return None
 	return f('rbac')
 
