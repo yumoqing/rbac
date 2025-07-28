@@ -7,7 +7,7 @@ ns = {
 
 info(f'{ns=}')
 db = DBPools()
-dbname = await rfexe('get_module_dbname', 'rbac')
+dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
 	r = await sor.sqlExe('select * from users where username=${username}$ and password=${password}$', ns.copy())
 	if len(r) == 0:

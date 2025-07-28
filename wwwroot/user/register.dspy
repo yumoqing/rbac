@@ -1,6 +1,6 @@
 debug(f'{params_kw=}')
 db = DBPools()
-dbname = await rfexe('get_module_dbname', 'sage')
+dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
 	orgid = await register_user(sor, params_kw)
 	if get_owner_orgid and openCustomerAccounts:
