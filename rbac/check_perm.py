@@ -57,7 +57,7 @@ async def create_user(sor, ns, roles=[]):
 			}
 		]
 	for rt in roles:
-		sql = "select * from role where orgtypeid = ${otid}$ and name in ${roles}$)"
+		sql = "select * from role where orgtypeid = ${otid}$ and name in ${roles}$"
 		recs = await sor.sqlExe(sql, {
 			'otid': rt['orgtypeid'],
 			'roles': rt['roles']
