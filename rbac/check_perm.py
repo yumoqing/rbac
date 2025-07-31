@@ -102,7 +102,8 @@ async def checkUserPassword(request, username, password):
 		return True
 	return False
 
-async def basic_auth(sor, auth):
+async def basic_auth(sor, request):
+	auth = request.headers.get('Authentication')
 	auther = BasicAuth('x')
 	m = auther.decode(auth)
 	username = m.login
@@ -122,7 +123,7 @@ async def getAuthenticationUserid(sor, request):
 		return None
 	for h,f in registered_auth_methods.items():
 		if auth.startswith(h):
-			return await f(auth)
+			return await f(sor, request)
 	return None
 	
 async def objcheckperm(obj, request, userid, path):
