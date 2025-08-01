@@ -1,10 +1,12 @@
 debug(f'{params_kw=}')
 db = DBPools()
-dbname = await rfexe('get_module_dbname', 'sage')
+dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
 	orgid = await register_user(sor, params_kw)
+	openCustomerAccounts = globals().get('openCustomerAccounts')
 	if get_owner_orgid and openCustomerAccounts:
 		ownerid = await get_owner_orgid(sor, orgid)
-		await openCustomerAccounts(sor, ownerid, orgid)
+		if openCustomerAccounts:
+			await openCustomerAccounts(sor, ownerid, orgid)
 	return UiMessage(title="Success", message="register success")
 return UiError(title='Error', message="register failed")

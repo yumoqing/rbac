@@ -17,7 +17,7 @@ async def get_user_roles(userid):
 	sql = "select concat(b.orgtypeid, '.', b.name) as name from userrole a, role b where a.userid=${userid}$ and a.roleid = b.id"
 	db = DBPools()
 	roles = []
-	dbname = await get_dbname()
+	dbname = get_dbname()
 	async with db.sqlorContext(dbname) as sor:
 		recs = await sor.sqlExe(sql, {'userid':userid})
 		if len(recs) < 1:
@@ -57,7 +57,7 @@ async def create_user(sor, ns, roles=[]):
 			}
 		]
 	for rt in roles:
-		sql = "select * from role where orgtypeid = ${otid}$ and name in ${roles}$)"
+		sql = "select * from role where orgtypeid = ${otid}$ and name in ${roles}$"
 		recs = await sor.sqlExe(sql, {
 			'otid': rt['orgtypeid'],
 			'roles': rt['roles']
@@ -82,14 +82,15 @@ async def register_user(sor, ns):
 	await create_user(sor, ns)
 	return id
 
-async def get_dbname():
-	rf = RegisterFunction()
-	dbname = await rf.exe('get_module_dbname', 'rbac')
-	return dbname
+def get_dbname():
+	f = get_serverenv('get_module_dbname')
+	if f is None:
+		return None
+	return f('rbac')
 
 async def checkUserPassword(request, username, password):
 	db = DBPools()
-	dbname = await get_dbname()
+	dbname = get_dbname()
 	async with db.sqlorContext(dbname) as sor:
 		sql = "select * from users where username=${username}$ and password=${password}$"
 		recs = await sor.sqlExe(sql, {'username':username, 'password':password})
@@ -101,7 +102,8 @@ async def checkUserPassword(request, username, password):
 		return True
 	return False
 
-async def basic_auth(sor, auth):
+async def basic_auth(sor, request):
+	auth = request.headers.get('Authentication')
 	auther = BasicAuth('x')
 	m = auther.decode(auth)
 	username = m.login
@@ -111,26 +113,17 @@ async def basic_auth(sor, auth):
 	if len(recs) < 1:
 		return None
 	await user_login(request, recs[0].id, 
+							username=recs[0].username, 
+							userorgid=recs[0].orgid)
 	return recs[0].id
 	
-async def bearer_auth(sor, auth):
-	# apikey = get_apikey_from_token(auth[7:])
-	apikey = auth[7:]
-	if apikey is None:
-		return None
-	sql = "select * from userapp where apikey=${apikey}$ and expired_date > ${today}$"
-	recs = await sor.sqlExe(sql, {"apikey":apikey, 'today': curDateString()})
-	if len(recs) < 1:
-		return None
-	return recs[0].userid
-
 async def getAuthenticationUserid(sor, request):
 	auth = request.headers.get('Authentication')
 	if auth is None:
 		return None
 	for h,f in registered_auth_methods.items():
 		if auth.startswith(h):
-			return await f(auth)
+			return await f(sor, request)
 	return None
 	
 async def objcheckperm(obj, request, userid, path):
@@ -143,7 +136,7 @@ right join userrole c on b.roleid = c.roleid
 where c.userid = ${userid}$
 """
 
-	dbname = await get_dbname()
+	dbname = get_dbname()
 	db = DBPools()
 	async with db.sqlorContext(dbname) as sor:
 		if userid is None:
@@ -168,8 +161,7 @@ where c.userid = ${userid}$
 	return False
 
 registered_auth_methods = {
-	"Basic ": basic_auth,
-	"Bearer ": bearer_auth
+	"Basic ": basic_auth
 }
 
 def register_auth_method(heading, func):

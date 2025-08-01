@@ -1,7 +1,4 @@
 {
-    "models_dir": "${HOME}$/py/rbac/models",
-    "output_dir": "${HOME}$/py/sage/wwwroot/_a/role",
-    "dbname": "sage",
     "tblname": "role",
 	"title":"角色",
     "params": {
