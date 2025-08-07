@@ -1,3 +1,4 @@
+debug('/rbac/add_superuser.dspy')
 db = DBPools()
 dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
@@ -13,6 +14,6 @@ async with db.sqlorContext(dbname) as sor:
 			"role":["superuser", "admin"]
 		}
 	]
-	await create_user(ns, roles)
+	await create_user(sor, ns, roles)
 	return "OK"
 return "Error"
