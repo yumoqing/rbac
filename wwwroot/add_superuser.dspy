@@ -11,7 +11,7 @@ async with db.sqlorContext(dbname) as sor:
 	roles = [
 		{
 			"orgtypeid":"owner",
-			"role":["superuser", "admin"]
+			"roles":["superuser", "admin"]
 		}
 	]
 	await create_user(sor, ns, roles)
