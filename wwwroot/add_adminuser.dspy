@@ -18,6 +18,6 @@ async with db.sqlorContext(dbname) as sor:
 		'roleid':'admin'
 	}
 	await sor.C('userrole', ns.copy())
-	return UiMesage(title='Success', message='admin user added')
+	return UiMessage(title='Success', message='admin user added')
 return UiError(title='Error', message='Error happened when add admin user')
 		
