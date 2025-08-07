@@ -4,7 +4,7 @@ return {
 	"options":{
 		"title":"Message",
 		"message":"logout success",
-		"auto_open":true,
+		"auto_open":True,
 		"anthor":"cc",
 		"timeout":3
 	},
