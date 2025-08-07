@@ -6,7 +6,7 @@ ns['id'] = uuid()
 await rfexe('passowrd', ns)
 user_orgid = await get_userorgid()
 ns['orgid'] = user_orgid
-dbname = await rfexe('get_module_dbname','rbac')
+dbname = get_module_dbname('rbac')
 db = DBPools()
 debug(f'{dbname=}')
 async with db.sqlorContext(dbname) as sor:
