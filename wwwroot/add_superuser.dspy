@@ -2,12 +2,12 @@ debug('/rbac/add_superuser.dspy')
 db = DBPools()
 dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
-	ns = {
+	ns = DictObject(**{
 		"id": uuid(),
 		"username":"superuser",
 		"password":password_encode('111111'),
 		"orgid":"0"
-	}
+	})
 	roles = [
 		{
 			"orgtypeid":"owner",
