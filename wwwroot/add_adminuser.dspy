@@ -3,7 +3,7 @@ if params_kw.get('password') != params_kw.get('chkpassword'):
 
 ns = params_kw.copy()
 ns['id'] = uuid()
-await rfexe('passowrd', ns)
+ns['password'] = password_encode(params_kw.password)
 user_orgid = await get_userorgid()
 ns['orgid'] = user_orgid
 dbname = get_module_dbname('rbac')
