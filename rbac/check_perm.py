@@ -120,10 +120,12 @@ async def basic_auth(sor, request):
 async def getAuthenticationUserid(sor, request):
 	auth = request.headers.get('Authorization')
 	if auth is None:
+		debug(f'{request.headers=}, not Authorization')
 		return None
 	for h,f in registered_auth_methods.items():
 		if auth.startswith(h):
 			return await f(sor, request)
+	debug(f'{auth=}, {registered_auth_methods=} no match')
 	return None
 	
 async def objcheckperm(obj, request, userid, path):
