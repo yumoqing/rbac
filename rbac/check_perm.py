@@ -103,7 +103,7 @@ async def checkUserPassword(request, username, password):
 	return False
 
 async def basic_auth(sor, request):
-	auth = request.headers.get('Authentication')
+	auth = request.headers.get('Authorization')
 	auther = BasicAuth('x')
 	m = auther.decode(auth)
 	username = m.login
@@ -118,7 +118,7 @@ async def basic_auth(sor, request):
 	return recs[0].id
 	
 async def getAuthenticationUserid(sor, request):
-	auth = request.headers.get('Authentication')
+	auth = request.headers.get('Authorization')
 	if auth is None:
 		return None
 	for h,f in registered_auth_methods.items():
@@ -157,7 +157,8 @@ where c.userid = ${userid}$
 				return True
 		debug(f'{userid=} has not permission to call {path=}')
 		return False
-	debug(f'error happened {userid}, {path}')
+	e = db.e_except
+	debug(f'objcheckperm() error happened {userid}, {path}, {e}\n{format_exc()}')
 	return False
 
 registered_auth_methods = {
