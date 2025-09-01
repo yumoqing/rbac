@@ -2,7 +2,7 @@
     "tblname": "role",
 	"title":"角色",
     "params": {
-		"sortby":[ "orgtype", "roleid"],
+		"sortby":[ "orgtypeid", "name"],
         "browserfields": {
             "exclouded": ["id"],
             "cwidth": {}
