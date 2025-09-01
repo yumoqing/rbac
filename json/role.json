@@ -2,7 +2,7 @@
     "tblname": "role",
 	"title":"角色",
     "params": {
-		"sortby":"name",
+		"sortby":[ "orgtype", "roleid"],
         "browserfields": {
             "exclouded": ["id"],
             "cwidth": {}
@@ -14,13 +14,11 @@
 			{
                 "field":"roleid",
                 "title":"角色权限",
-                "url":"../rolepermission",
                 "subtable":"rolepermission"
 			},
 			{
 				"field":"roleid",
 				"title":"用户",
-				"url":"../users",
 				"subtable":"users"
 			}
 		]
