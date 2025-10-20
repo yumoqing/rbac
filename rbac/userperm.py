@@ -29,7 +29,7 @@ class UserPermisions:
 			await self.refresh_all_cup()
 	
 	async def refresh_user_cup(self, userid):
-		cup = await self.get_cached_user_cup(userid):
+		cup = await self.get_cached_user_cup(userid)
 		if cup:
 			await self.load_user_cup(userid)
 		
