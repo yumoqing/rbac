@@ -33,10 +33,10 @@ class UserPermisions:
 		if cup:
 			await self.load_user_cup(userid)
 		
-	async get_cached_user_cup(self, userid):
+	async def get_cached_user_cup(self, userid):
 		return self.cups.get(userid)
 
-	async load_user_cup(userid):
+	async def load_user_cup(userid):
 		sql = """select a.id,b.path from users a, userrole c, rolepermission d, permission b
 where a.id = c.userid
 	and c.roleid = d.roleid
