@@ -9,8 +9,8 @@ class CacheUP:
 		self.paths = paths
 		self.sql_all =  """select a.id,b.path from users a, userrole c, rolepermission d, permission b
 where a.id = c.userid
-    and c.roleid = d.roleid
-    and d.permid = b.id"""
+	and c.roleid = d.roleid
+	and d.permid = b.id"""
 
 	def get_paths(self):
 		self.touch_time = time.time()
@@ -74,16 +74,16 @@ where a.id = c.userid
 		return cup.get_paths()
 	
 	async def refresh_all_cup(self):
-        db = DBPools()
-        env = ServerEnv()
-        dbname = env.get_module_dbname('rbac')
-        sql = """select a.id,b.path from users a, userrole c, rolepermission d, permission b
+		db = DBPools()
+		env = ServerEnv()
+		dbname = env.get_module_dbname('rbac')
+		sql = """select a.id,b.path from users a, userrole c, rolepermission d, permission b
 where a.id = c.userid
-    and c.roleid = d.roleid
-    and d.permid = b.id order by a.id, b.path"""
+	and c.roleid = d.roleid
+	and d.permid = b.id order by a.id, b.path"""
  
-        async with db.sqlorContext(dbname) as sor:
-            ups = await sor.sqlExe(sql, {'userid': userid})
+		async with db.sqlorContext(dbname) as sor:
+			ups = await sor.sqlExe(sql, {'userid': userid})
 			userid = ''
 			paths = []
 			for u in ups:
