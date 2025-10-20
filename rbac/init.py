@@ -2,6 +2,12 @@ from ahserver.auth_api import AuthAPI
 from ahserver.serverenv import ServerEnv
 from rbac.check_perm import objcheckperm, get_user_roles, checkUserPassword, register_user, register_auth_method, create_org, create_user
 from rbac.set_role_perms import set_role_perm, set_role_perms
+from rbac.userperm import UserPermisions
+
+async def get_owner_orgid(sor, orgid):
+	env = ServerEnv()
+	dbname = env.get_module_dbname()
+	return '0'
 
 def load_rbac():
 	AuthAPI.checkUserPermission = objcheckperm
@@ -14,5 +20,6 @@ def load_rbac():
 	env.set_role_perm = set_role_perm
 	env.set_role_perms = set_role_perms
 	env.register_auth_method = register_auth_method
+	env.get_owner_orgid = get_owner_orgid
 
 

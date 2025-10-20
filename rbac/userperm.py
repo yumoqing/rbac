@@ -1,5 +1,6 @@
 import time
 from sqlor.dbpools import DBPools
+from appPublic.Singleton import SingletonDecorator
 
 class CacheUP:
 	def __init__(self, userid, paths):
@@ -14,7 +15,8 @@ where a.id = c.userid
 	def get_paths(self):
 		self.touch_time = time.time()
 		return self.paths
-	
+
+@SingletonDecorator
 class UserPermisions:
 	def __init__(self, max_cache_user=10000):
 		self.max_cache_user = max_cache_user
