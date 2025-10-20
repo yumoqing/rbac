@@ -57,7 +57,7 @@ where a.id = c.userid
 			if usercnt > self.max_cache_user:
 				arr = [ v for v in self.cups.values() ]
 				e =  min(arr, key=lambda x: x["touch_time"])
-				del self.cups[e['userid']
+				del self.cups[e['userid']]
 			return cup
 			
 	async def is_user_has_path_perm(self, userid, path):
