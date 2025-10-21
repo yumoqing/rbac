@@ -1,5 +1,6 @@
 import time
 
+from traceback import format_exc
 from aiohttp import BasicAuth
 from sqlor.dbpools import DBPools
 from appPublic.registerfunction import RegisterFunction
