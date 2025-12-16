@@ -5,8 +5,6 @@ from rbac.set_role_perms import set_role_perm, set_role_perms
 from rbac.userperm import UserPermisions
 
 async def get_owner_orgid(sor, orgid):
-	env = ServerEnv()
-	dbname = env.get_module_dbname()
 	return '0'
 
 def load_rbac():
@@ -21,5 +19,4 @@ def load_rbac():
 	env.set_role_perms = set_role_perms
 	env.register_auth_method = register_auth_method
 	env.get_owner_orgid = get_owner_orgid
-
 

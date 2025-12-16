@@ -3,10 +3,11 @@ db = DBPools()
 dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
 	orgid = await register_user(sor, params_kw)
-	openCustomerAccounts = globals().get('openCustomerAccounts')
-	if get_owner_orgid and openCustomerAccounts:
+	try:
 		ownerid = await get_owner_orgid(sor, orgid)
-		if openCustomerAccounts:
-			await openCustomerAccounts(sor, ownerid, orgid)
+		await openCustomerAccounts(sor, ownerid, orgid)
+	except Exception as e:
+		exception(f'{e}')
+
 	return UiMessage(title="Success", message="register success")
 return UiError(title='Error', message="register failed")
