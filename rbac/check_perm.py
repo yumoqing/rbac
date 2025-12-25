@@ -15,7 +15,7 @@ from ahserver.globalEnv import password_encode
 from ahserver.serverenv import ServerEnv, get_serverenv, set_serverenv
 
 async def get_user_roles(userid):
-	sql = "select concat(b.orgtypeid, '.', b.name) as name from userrole a, role b where a.userid=${userid}$ and a.roleid = b.id"
+	sql = "select b.orgtypeid, concat(b.orgtypeid, '.', b.name) as name from userrole a, role b where a.userid=${userid}$ and a.roleid = b.id"
 	db = DBPools()
 	roles = []
 	dbname = get_dbname()
@@ -23,7 +23,11 @@ async def get_user_roles(userid):
 		recs = await sor.sqlExe(sql, {'userid':userid})
 		if len(recs) < 1:
 			return roles
+		orgtypes = []
 		for r in recs:
+			if r.orgtypeid not in orgtypes:
+				orgtypes.append(r.orgtypeid)
+				roles.append(r.orgtypeid + '.*')
 			roles.append(r.name)
 	return roles
 
