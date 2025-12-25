@@ -1,0 +1,28 @@
+{
+	"widgettype":"Menu",
+	"options":{
+		"cwidth":10,
+		"target":"PopupWindow",
+		"popup_options":{
+			"height":"70%",
+			"width":"70%"
+		},
+		"items":[
+			{
+				"name":"resetpwd",
+				"label":"重置密码",
+				"url":"{{entire_url('reset_password')}}"
+			},
+			{
+				"name":"myrole",
+				"label":"我的角色",
+				"url":"{{entire_url('myrole.ui')}}"
+			},
+			{
+				"name":"logout",
+				"label":"签退",
+				"url":"{{entire_url('logout.dspy')}}"
+			}
+		]
+	}
+}

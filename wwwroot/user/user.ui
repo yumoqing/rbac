@@ -17,7 +17,7 @@
 			},
 			"target":"Popup",
 			"options":{
-				"url":"{{entire_url('user_menu.ui')}}"
+				"url":"{{entire_url('/user_menu.ui')}}"
 			}
 		}
 	],
