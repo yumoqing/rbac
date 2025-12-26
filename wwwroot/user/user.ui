@@ -13,6 +13,7 @@
 			"actiontype":"urlwidget",
 			"popup_options":{
 				"eventpos":true,
+				"cwidth":12,
 				"dismiss_events":["command"]
 			},
 			"target":"Popup",
