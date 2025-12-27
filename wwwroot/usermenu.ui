@@ -11,17 +11,17 @@
 			{
 				"name":"resetpwd",
 				"label":"重置密码",
-				"url":"{{entire_url('reset_password')}}"
+				"url":"{{entire_url('user/reset_password')}}"
 			},
 			{
 				"name":"myrole",
 				"label":"我的角色",
-				"url":"{{entire_url('myrole.ui')}}"
+				"url":"{{entire_url('user/myrole.ui')}}"
 			},
 			{
 				"name":"logout",
 				"label":"签退",
-				"url":"{{entire_url('logout.dspy')}}"
+				"url":"{{entire_url('user/logout.dspy')}}"
 			}
 		]
 	}
