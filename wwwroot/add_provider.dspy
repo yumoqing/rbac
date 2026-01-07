@@ -7,11 +7,12 @@ db = DBPools()
 dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
 	ownerid = await get_userorgid()
-	await create_org(sor, ns, orgtypes=['customer', 'provider'])
-	if openCustomerAccounts:
-		await openCustomerAccounts(sor, ownerid, orgid)
-	if openProviderAccounts:
-		await openProviderAccounts(sor, ownerid, id)
+	orgid = id
+	await create_org(sor, ns, orgtypes=['provider'])
+	try:
+		await openRetailRelationshipAccounts(sor, ownerid, ownerid, orgid)
+	except Exception as e:
+		exception(f'{e}')
 	return {
 		"widgettype":"Message",
 		"options":{
