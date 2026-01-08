@@ -4,7 +4,10 @@ from rbac.check_perm import objcheckperm, get_user_roles, checkUserPassword, reg
 from rbac.set_role_perms import set_role_perm, set_role_perms
 from rbac.userperm import UserPermisions
 
-async def get_owner_orgid(sor, orgid):
+async def get_owner_orgid(*args, **kw):
+	return '0'
+
+async def sor_get_owner_orgid(sor, orgid):
 	return '0'
 
 def load_rbac():
