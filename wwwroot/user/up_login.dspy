@@ -26,16 +26,16 @@ async with db.sqlorContext(dbname) as sor:
 			"timeout":3,
 			"auto_open":True,
 			"title":"Login",
-			"message":"Welcome back"
+			"message":f"{r[0].username} Welcome back"
 		},
 		"binds":[
 			{
 				"wid":"self",
-				"event":"dismissed",
+				"event":"opened",
 				"actiontype":"urlwidget",
-				"target":"window",
+				"target":"window.user_container",
 				"options":{
-					"url":entire_url('/index.ui')
+					"url":entire_url('/rbac/user/userinfo.ui')
 				}
 			},
 			{

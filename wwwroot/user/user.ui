@@ -1,81 +1,15 @@
-{% if get_user() %}
 {
-	"widgettype":"HBox",
+	"id":"user_container",
+	"widgettype":"VBox",
 	"options":{
-		"css":"clickable",
-		"tip":"用户功能",
 		"cwidth":6
 	},
-	"binds":[
-		{
-			"wid":"self",
-			"event":"click",
-			"actiontype":"urlwidget",
-			"popup_options":{
-				"eventpos":true,
-				"cwidth":12,
-				"dismiss_events":["command"]
-			},
-			"target":"Popup",
-			"options":{
-				"url":"{{entire_url('/user_menu.ui')}}"
-			}
-		}
-	],
 	"subwidgets":[
 		{
-			"widgettype":"Svg",
+			"widgettype":"urlwidget",
 			"options":{
-				"url":"{{entire_url('/bricks/imgs/user.svg')}}",
-				"rate":1.5
-			}
-		},
-		{
-			"widgettype":"Text",
-			"options":{
-				"cwidth": 4,
-				"text":"{{get_username()}}"
+				"url":"{{entire_url('userinfo.ui')}}",
 			}
 		}
 	]
 }
-{% else %}
-{
-	"widgettype":"IconBar",
-	"options":{
-		"css":"filler",
-		"tools":[
-			{
-				"name":"login",
-				"tip":"点击登录",
-				"icon":"{{entire_url('/bricks/imgs/login.svg')}}"
-			},
-			{
-				"name":"register",
-				"tip":"点击注册",
-				"icon":"{{entire_url('/bricks/imgs/register.svg')}}"
-			}
-		]
-	},
-	"binds":[
-		{
-			"wid":"self",
-			"event":"login",
-			"actiontype":"urlwidget",
-			"target":"self",
-			"options":{
-				"url":"{{entire_url('login.ui')}}"
-			}
-		},
-		{
-			"wid":"self",
-			"event":"register",
-			"actiontype":"urlwidget",
-			"target":"self",
-			"options":{
-				"url":"{{entire_url('register.ui')}}"
-			}
-		}
-	]
-}
-{% endif %}
