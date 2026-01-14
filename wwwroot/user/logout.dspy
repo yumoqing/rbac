@@ -13,9 +13,9 @@ return {
 			"wid":"self",
 			"event":"dismissed",
 			"actiontype":"urlwidget",
-			"target":"window",
+			"target":"window.user_contianer",
 			"options":{
-				"url":entire_url('/index.ui')
+				"url":entire_url('userinfo.ui')
 			}
 		}
 	]
