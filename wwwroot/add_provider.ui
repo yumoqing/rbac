@@ -1,0 +1,41 @@
+{% set orgid = get_userorgid() %}
+{% if orgid != get_owner_orgid() %}
+{
+	"widgettype":"Text",
+	"options":{
+		"i18n":true,
+		"otext":"you are not owner user"
+	}
+}
+{% else %}
+{
+	"widgettype":"Form",
+	"options":{
+		"width":"100%",
+		"height":"100%",
+		"fields":[
+			{
+				"name":"orgname",
+				"label":"机构名称",
+				"uitype":"str",
+				"required":true
+			},{
+				"name":"orgabbr",
+				"label":"机构简称",
+				"uitype":"str"
+			}
+		]
+	},
+	"binds":[
+		{
+			"wid":"self",
+			"event":"submit",
+			"actiontype":"urlwidget",
+			"target":"self",
+			"options":{
+				"url":"{{entire_url('add_provider.dspy')}}"
+			}
+		}
+	]
+}
+{% endif %}
