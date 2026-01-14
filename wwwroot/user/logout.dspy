@@ -1,23 +1,9 @@
 await forget_user()
 return {
-	"widgettype":"Message",
+	"widgettype":"Text",
 	"options":{
-		"title":"Message",
-		"message":"logout success",
-		"auto_open":True,
-		"anthor":"cc",
-		"timeout":3
-	},
-	"binds":[
-		{
-			"wid":"self",
-			"event":"dismissed",
-			"actiontype":"urlwidget",
-			"target":"window.user_contianer",
-			"options":{
-				"url":entire_url('userinfo.ui')
-			}
-		}
-	]
+		"otext":"logout success",
+		"i18n":True,
+	}
 }
 
