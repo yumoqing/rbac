@@ -31,7 +31,7 @@ async with db.sqlorContext(dbname) as sor:
 		"binds":[
 			{
 				"wid":"self",
-				"event":"opened",
+				"event":"dismissed",
 				"actiontype":"urlwidget",
 				"target":"window.user_container",
 				"options":{
@@ -40,7 +40,7 @@ async with db.sqlorContext(dbname) as sor:
 			},
 			{
 				"wid":"self",
-				"event":"opened",
+				"event":"dismissed",
 				"actiontype":"script",
 				"target":params_kw.referer_widget,
 				"script":"this.destroy()"
