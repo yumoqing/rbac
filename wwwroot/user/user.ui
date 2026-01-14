@@ -8,7 +8,7 @@
 		{
 			"widgettype":"urlwidget",
 			"options":{
-				"url":"{{entire_url('userinfo.ui')}}",
+				"url":"{{entire_url('userinfo.ui')}}"
 			}
 		}
 	]
