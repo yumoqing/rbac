@@ -42,7 +42,7 @@ async with db.sqlorContext(dbname) as sor:
 				"wid":"self",
 				"event":"opened",
 				"actiontype":"script",
-				"target":"window.login_window",
+				"target":params_kw.referer_widget,
 				"script":"this.destroy()"
 			}
 		]
