@@ -9,7 +9,7 @@
 			"cwidth":20
 		},
 		"items":[
-{% if 'customer.operator' in roles %}
+{% if 'customer.operator' in roles or 'customer.customer' in roles %}
 			{
 				"icon": "{{entire_url('/bricks/imgs/qr-scan.svg')}}",
 				"name":"qr-scan",
