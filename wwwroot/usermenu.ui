@@ -1,3 +1,4 @@
+{% set roles = get_user_roles(get_user()) %}
 {
 	"widgettype":"Menu",
 	"options":{
@@ -8,6 +9,18 @@
 			"cwidth":20
 		},
 		"items":[
+{% if 'customer.operator' in roles %}
+			{
+				"icon": "{{entire_url('/bricks/imgs/qr-scan.svg')}}",
+				"name":"qr-scan",
+				"label":"扫码",
+				"url":"{{entire_url('qr_scan.ui')}}"
+				"popup_options":{
+					"height": "300px",
+					"width": "300px"
+				}
+			},
+{% endif %}
 			{
 				"name":"resetpwd",
 				"label":"重置密码",
