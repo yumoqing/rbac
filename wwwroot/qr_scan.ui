@@ -1,0 +1,13 @@
+{
+	"widgettype": "QRCodeSCan",
+	"options": {},
+	"binds": [
+		"wid": "self", 
+		"event": "recognized",
+		"actiontype": "urlwidget",
+		"target": "root.page_center",
+		"options": {
+			"url": "$text"
+		}
+	]
+}
