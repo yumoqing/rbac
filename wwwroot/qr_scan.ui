@@ -14,7 +14,7 @@
 			"wid": "self",
 			"event": "recognized",
 			"actiontype": "script",
-			"target": "#PopupWindow",
+			"target": "-@PopupWindow",
 			"script": "this.dismiss()"
 		}
 	]
