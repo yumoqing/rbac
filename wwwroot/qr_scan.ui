@@ -1,5 +1,5 @@
 {
-	"widgettype": "QRCodeSCan",
+	"widgettype": "QRCodeScan",
 	"options": {},
 	"binds": [
 		{
