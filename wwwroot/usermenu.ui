@@ -17,8 +17,8 @@
 				"url":"{{entire_url('qr_scan.ui')}}",
 				"popup_options":{
 					"dismiss_events": [ "stopped", "recognized"],
-					"height": "300px",
-					"width": "300px"
+					"height": "370px",
+					"width": "350px"
 				}
 			},
 {% endif %}
