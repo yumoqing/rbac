@@ -8,7 +8,7 @@
 			"actiontype": "urlwidget",
 			"target": "root.page_center",
 			"options": {
-				"url": "$text"
+				"url": "${text}"
 			}
 		}, {
 			"wid": "self",
