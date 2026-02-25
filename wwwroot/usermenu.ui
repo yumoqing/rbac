@@ -16,6 +16,7 @@
 				"label":"扫码",
 				"url":"{{entire_url('qr_scan.ui')}}",
 				"popup_options":{
+					"dismiss_events": [ "stopped", "recognized"],
 					"height": "300px",
 					"width": "300px"
 				}
