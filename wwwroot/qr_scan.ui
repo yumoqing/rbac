@@ -2,12 +2,20 @@
 	"widgettype": "QRCodeSCan",
 	"options": {},
 	"binds": [
-		"wid": "self", 
-		"event": "recognized",
-		"actiontype": "urlwidget",
-		"target": "root.page_center",
-		"options": {
-			"url": "$text"
+		{
+			"wid": "self", 
+			"event": "recognized",
+			"actiontype": "urlwidget",
+			"target": "root.page_center",
+			"options": {
+				"url": "$text"
+			}
+		}, {
+			"wid": "self",
+			"event": "recognized",
+			"actiontype": "script",
+			"target": "#PopupWindow",
+			"script": "this.dismiss()"
 		}
 	]
 }
