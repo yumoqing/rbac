@@ -14,6 +14,19 @@ from ahserver.auth_api import AuthAPI, user_login
 from ahserver.globalEnv import password_encode
 from ahserver.serverenv import ServerEnv, get_serverenv, set_serverenv
 
+async def get_org_users(orgid):
+	env = ServerEnv()
+	async with get_sor_context(env, 'rbac') as sor:
+		return await sor_get_org_users(sor, orgid)
+	return []
+
+async def sor_get_org_users(sor, orgid):
+	sql = "select * from users where orgid=${orgid}$"
+	recs = await sor.sqlExe(sql, {'orgid': orgid})
+	if len(recs):
+		return recs
+	return []
+
 async def get_user_roles(userid):
 	sql = "select b.orgtypeid, concat(b.orgtypeid, '.', b.name) as name from userrole a, role b where a.userid=${userid}$ and a.roleid = b.id"
 	db = DBPools()
