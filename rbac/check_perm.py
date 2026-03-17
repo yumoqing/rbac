@@ -2,7 +2,7 @@ import time
 
 from traceback import format_exc
 from aiohttp import BasicAuth
-from sqlor.dbpools import DBPools
+from sqlor.dbpools import DBPools, get_sor_context
 from appPublic.registerfunction import RegisterFunction
 from appPublic.rc4 import password, unpassword
 from appPublic.jsonConfig import getConfig
