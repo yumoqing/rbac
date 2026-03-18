@@ -1,0 +1,25 @@
+# 用短信模块检查验证码是否正确
+if params_kw.cellphone:
+	return {
+		"status": "error",
+		"data":{
+			"message": "需输入手机号"
+		}
+	}
+if params_kw.sms_code is None:
+	return {
+		"status": "error",
+		"data": {
+			"message": "需输入验证码"
+		}
+	}
+f = await sms_engine.check_sms_code(params_kw.cellphone, params_kw.sms_code)
+if not f:
+	return {
+		"status": "error",
+		"data": {
+			"message": "手机短信验证码出错"
+		}
+	}
+
+

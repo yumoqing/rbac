@@ -1,0 +1,24 @@
+phone = params_kw.cellphone
+if phone is None:
+	return {
+		"status": "error",
+		"data":{
+			"message": "没有收到手机号"
+		}
+	}
+# 使用短信模块发布的sms_engine实例生成验证码，参数手机号
+status, timeout = await sms_engine.generate_sms_code(phone)
+if not status:
+	return {
+		status": "error",
+		"data": {
+			message": f'为{phone}生成的手机号出错"
+		}
+	}
+return {
+	"status": "ok",
+	"data": {
+		"message": “短信码已生成",
+		"timeout": timeout
+	}
+}
