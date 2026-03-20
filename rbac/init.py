@@ -3,11 +3,11 @@ from ahserver.serverenv import ServerEnv
 from .orgs import (
 	get_platform_providers
 )
+from .userperm import UserPermissions
 from rbac.check_perm import (
 	objcheckperm, 
 	get_org_users,
 	sor_get_org_users,
-	get_user_roles, 
 	checkUserPassword, 
 	register_user, 
 	register_auth_method, 
@@ -26,10 +26,11 @@ async def sor_get_owner_orgid(sor, orgid):
 def load_rbac():
 	AuthAPI.checkUserPermission = objcheckperm
 	env = ServerEnv()
+	env.userpermissions = UserPermissions()
 	env.create_org = create_org
 	env.get_platform_providers = get_platform_providers
 	env.create_user = create_user
-	env.get_user_roles = get_user_roles
+	env.get_user_roles = userpermsissions.get_user_roles
 	env.check_user_password = checkUserPassword
 	env.register_user = register_user
 	env.set_role_perm = set_role_perm

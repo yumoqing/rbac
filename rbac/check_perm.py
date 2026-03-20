@@ -28,23 +28,6 @@ async def sor_get_org_users(sor, orgid):
 		return recs
 	return []
 
-async def get_user_roles(userid):
-	sql = "select b.orgtypeid, concat(b.orgtypeid, '.', b.name) as name from userrole a, role b where a.userid=${userid}$ and a.roleid = b.id"
-	db = DBPools()
-	roles = []
-	dbname = get_dbname()
-	async with db.sqlorContext(dbname) as sor:
-		recs = await sor.sqlExe(sql, {'userid':userid})
-		if len(recs) < 1:
-			return roles
-		orgtypes = []
-		for r in recs:
-			if r.orgtypeid not in orgtypes:
-				orgtypes.append(r.orgtypeid)
-				roles.append(r.orgtypeid + '.*')
-			roles.append(r.name)
-	return roles
-
 async def create_org(sor, ns, orgtypes=[]):
 	await sor.C('organization', ns)
 	if orgtypes == []:

@@ -12,6 +12,17 @@ class UserPermisions:
 		self.rp_caches = None
 		self.ur_caches = {}
 	
+	async def get_user_roles(self, userid):
+		if userid is None:
+			return ['anonymous', 'any']
+		roles = self.ur_caches.get(userid)
+		if roles:
+			return roles
+		async with get_sor_context(ServerEnv(), 'rbac') as sor:
+			await self.get_userroles(sor, userid)
+			return self.ur_caches.get(userid)
+		return None
+
 	async def load_roleperms(self, sor):
 		self.rp_caches = {}
 		sql_all =  """select c.orgtypeid, c.name, b.path 
