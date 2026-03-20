@@ -1,6 +1,6 @@
 from ahserver.auth_api import AuthAPI
 from ahserver.serverenv import ServerEnv
-from orgs import (
+from .orgs import (
 	get_platform_providers
 )
 from rbac.check_perm import (
