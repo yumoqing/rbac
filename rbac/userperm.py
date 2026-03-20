@@ -19,7 +19,7 @@ from rolepermission a, permission b
 where a.permid = b.id
 order by a.orgtypeid, a.name"""
 		recs = sor.sqlExe(sql_all, {})
-		for r recs:
+		for r in recs:
 			k = 'anonymous'
 			if r.orgtypeid:
 				k = f'{r.orgtypeid}.{r.name}'
