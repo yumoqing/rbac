@@ -1,5 +1,8 @@
 from ahserver.auth_api import AuthAPI
 from ahserver.serverenv import ServerEnv
+from orgs import (
+	get_platform_providers
+}
 from rbac.check_perm import (
 	objcheckperm, 
 	get_org_users,
@@ -24,6 +27,7 @@ def load_rbac():
 	AuthAPI.checkUserPermission = objcheckperm
 	env = ServerEnv()
 	env.create_org = create_org
+	env.get_platform_providers = get_platform_providers
 	env.create_user = create_user
 	env.get_user_roles = get_user_roles
 	env.check_user_password = checkUserPassword
