@@ -58,11 +58,14 @@ where a.id = c.userid
 		self.ur_caches[userid] = sorted(list(set(roles)))
 
 	def check_roles_path(self, roles, path):
+		ret = False
 		for role in roles:
 			paths = self.rp_caches.get(role)
 			if not paths:
-				return False
-			return path in paths
+				continue
+			if path in paths:
+				return True
+		return False
 
 	async def is_user_has_path_perm(self, userid, path):
 		roles = self.ur_caches.get(userid)
