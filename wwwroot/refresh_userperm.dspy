@@ -1,0 +1,4 @@
+async with get_sor_context(request._run_ns, 'rbac') as sor:
+	await userpermissions.load_roleperms(sor)
+	return UiMessage(title='refresh', message='refresh role perms finished')
+return UiErrir(title='refresh', message='refresh role perms failed')
