@@ -13,7 +13,7 @@ from appPublic.uniqueID import getID
 from ahserver.auth_api import AuthAPI, user_login
 from ahserver.globalEnv import password_encode
 from ahserver.serverenv import ServerEnv, get_serverenv, set_serverenv
-from .userperm import UserPermisions
+from .userperm import UserPermissions
 
 async def get_org_users(orgid):
 	env = ServerEnv()
