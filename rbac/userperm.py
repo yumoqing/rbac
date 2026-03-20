@@ -2,6 +2,7 @@ import time
 from sqlor.dbpools import DBPools
 from ahserver.serverenv import ServerEnv
 from appPublic.Singleton import SingletonDecorator
+from appPublic.log import debug, exception, error
 
 class CacheUP:
 	def __init__(self, userid, paths):
@@ -60,6 +61,8 @@ where a.id = c.userid
 				e =  min(arr, key=lambda x: x["touch_time"])
 				del self.cups[e['userid']]
 			return cup
+		debug(f'{db.e_except=}')
+		return None
 			
 	async def is_user_has_path_perm(self, userid, path):
 		paths = await self.get_user_perms_paths(userid)
