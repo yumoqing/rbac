@@ -61,7 +61,7 @@ where a.id = c.userid
 				e =  min(arr, key=lambda x: x["touch_time"])
 				del self.cups[e['userid']]
 			return cup
-		debug(f'{db.e_except=}')
+		debug(f'{db.e_except=}, {userid=}')
 		return None
 			
 	async def is_user_has_path_perm(self, userid, path):
