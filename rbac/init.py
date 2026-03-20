@@ -15,7 +15,6 @@ from rbac.check_perm import (
 	create_user
 )
 from rbac.set_role_perms import set_role_perm, set_role_perms
-from rbac.userperm import UserPermisions
 
 async def get_owner_orgid(*args, **kw):
 	return '0'
