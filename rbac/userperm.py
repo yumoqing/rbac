@@ -18,7 +18,7 @@ class UserPermisions:
 from rolepermission a, permission b
 where a.permid = b.id
 order by a.orgtypeid, a.name"""
-		recs = sor.sqlExe(sql_all, {})
+		recs = await sor.sqlExe(sql_all, {})
 		for r in recs:
 			k = 'anonymous'
 			if r.orgtypeid:
