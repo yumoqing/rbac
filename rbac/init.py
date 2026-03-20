@@ -29,7 +29,7 @@ def load_rbac():
 	env.create_org = create_org
 	env.get_platform_providers = get_platform_providers
 	env.create_user = create_user
-	env.get_user_roles = userpermissions.get_user_roles
+	env.get_user_roles = env.userpermissions.get_user_roles
 	env.check_user_password = checkUserPassword
 	env.register_user = register_user
 	env.set_role_perm = set_role_perm
