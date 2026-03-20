@@ -5,7 +5,7 @@ from appPublic.Singleton import SingletonDecorator
 from appPublic.log import debug, exception, error
 
 @SingletonDecorator
-class UserPermisions:
+class UserPermissions:
 	def __init__(self, max_cache_user=10000):
 		self.max_cache_user = max_cache_user
 		self.cups = {}
