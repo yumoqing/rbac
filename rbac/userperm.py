@@ -33,6 +33,8 @@ order by c.orgtypeid, c.name"""
 		recs = await sor.sqlExe(sql_all, {})
 		for r in recs:
 			k = 'anonymous'
+			if k == 'any.any':
+				k = 'any'
 			if r.orgtypeid:
 				k = f'{r.orgtypeid}.{r.name}'
 			arr = self.rp_caches.get(k, [])
@@ -47,9 +49,12 @@ where a.id = c.userid
 	and a.id = ${userid}$''', {'userid': userid})
 		roles = ['any', '*.*']		# 登录用户
 		for r in recs:
-			roles.append(f'{r.orgtypeid}.{r.name}')
-			roles.append(f'{r.orgtypeid}.*')
-			roles.append(f'*.{r.name}')
+			if r.name == 'any':
+				roles.append('any')
+			else:
+				roles.append(f'{r.orgtypeid}.{r.name}')
+				roles.append(f'{r.orgtypeid}.*')
+				roles.append(f'*.{r.name}')
 		self.ur_caches[userid] = sorted(list(set(roles)))
 
 	def check_roles_path(self, roles, path):
