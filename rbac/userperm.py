@@ -33,7 +33,7 @@ order by c.orgtypeid, c.name"""
 from users a, role b, userrole c
 where a.id = c.userid
 	and c.roleid = b.id
-	and a.id = ${userid}''', {'userid': userid})
+	and a.id = ${userid}$''', {'userid': userid})
 		roles = ['*.*']		# 登录用户
 		for r in recs:
 			append(f'{r.orgtypeid}.{r.name}')
@@ -54,7 +54,8 @@ where a.id = c.userid
 		if self.rp_caches is None or not roles:
 			env = ServerEnv()
 			async with get_sor_context(env, 'rbac') as sor:
-				await self.load_roleperms(sor)
+				if not self.rp_caches:
+					await self.load_roleperms(sor)
 				if not roles:
 					await self.get_userroles(sor, userid)
 					roles = self.ur_caches.get(userid)
