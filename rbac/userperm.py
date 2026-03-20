@@ -33,9 +33,9 @@ order by c.orgtypeid, c.name"""
 		recs = await sor.sqlExe(sql_all, {})
 		for r in recs:
 			k = 'anonymous'
-			if k == 'any.any':
+			if r.name == 'any':
 				k = 'any'
-			if r.orgtypeid:
+			elif r.orgtypeid:
 				k = f'{r.orgtypeid}.{r.name}'
 			arr = self.rp_caches.get(k, [])
 			arr.append(r.path)
