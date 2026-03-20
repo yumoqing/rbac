@@ -9,6 +9,8 @@ class CacheUP:
 		self.touch_time = time.time()
 		self.userid = userid
 		self.paths = paths
+		if userid is None:
+			sql
 		self.sql_all =  """select a.id,b.path from users a, userrole c, rolepermission d, permission b
 where a.id = c.userid
 	and c.roleid = d.roleid
@@ -18,56 +20,62 @@ where a.id = c.userid
 		self.touch_time = time.time()
 		return self.paths
 
+class CacheRolePath:
 @SingletonDecorator
 class UserPermisions:
 	def __init__(self, max_cache_user=10000):
 		self.max_cache_user = max_cache_user
 		self.cups = {}
+		self.rp_caches = None
+		self ur_caches = {}
 	
-	async def refresh(self, userid=None):
-		if userid:
-			await self.refresh_user_cup(userid)
-		else:
-			await self.refresh_all_cup()
-	
-	async def refresh_user_cup(self, userid):
-		cup = await self.get_cached_user_cup(userid)
-		if cup:
-			await self.load_user_cup(userid)
-		
-	async def get_cached_user_cup(self, userid):
-		return self.cups.get(userid)
+	async def load_roleperms(self, sor):
+		self.rp_caches = {}
+		sql_all =  """select a.orgtypeid, a.name, b.path 
+from rolepermission a, permission b
+where a.permid = b.id
+order by a.orgtypeid, a.name"""
+		recs = sor.sqlExe(sql_all, {})
+		for r recs:
+			k = 'anonymous'
+			if r.orgtypeid:
+				k = f'{r.orgtypeid}.{r.name}'
+			arr = self.rp_caches.get(k, [])
+			arr.append(r.path)
+			self.rp_caches[k] = arr
 
-	async def load_user_cup(self, userid):
-		sql = """select a.id,b.path from users a, userrole c, rolepermission d, permission b
+	async def get_userroles(self, sor, userid):
+		recs = await sor.sqlExe('''select b.orgtypeid, b.name 
+from users a, role b, userrole c
 where a.id = c.userid
-	and c.roleid = d.roleid
-	and d.permid = b.id
-	and a.id = ${userid}$"""
-		db = DBPools()
-		env = ServerEnv()
-		dbname = env.get_module_dbname('rbac')
-		
-		async with db.sqlorContext(dbname) as sor:
-			ups = await sor.sqlExe(sql, {'userid': userid})
-			paths = [ u.path for u in ups ]
-			cup = CacheUP(userid, paths)
-			self.cups[userid] = cup
+	and c.roleid = b.id
+	and a.id = ${userid}''', {'userid': userid})
+		roles = ['*.*']		# 登录用户
+		for r in recs:
+			append(f'{r.orgtypeid}.{r.name}')
+			append(f'{r.orgtypeid}.*')
+			append(f'*.{r.name}')
+		self.ur_caches[userid] = sorted(list(set(roles)))
 
-			usercnt = len([u for u in self.cups.keys()])
-			if usercnt > self.max_cache_user:
-				arr = [ v for v in self.cups.values() ]
-				e =  min(arr, key=lambda x: x["touch_time"])
-				del self.cups[e['userid']]
-			return cup
-		debug(f'{db.e_except=}, {userid=}')
-		return None
-			
+	def check_roles_path(self, roles, path):
+		for role in roles:
+			paths = self.rp_caches.get(role)
+			return path in paths
+
 	async def is_user_has_path_perm(self, userid, path):
-		paths = await self.get_user_perms_paths(userid)
-		if path in paths:
-			return True
-		return False
+		roles = self.ur_caches.get(userid)
+		if userid is None:
+			roles = ['anonymous']
+
+		if self.ur_caches is None:
+			async with get_sor_context(env, 'rbac') as sor:
+				await self.load_roleperms(sor)
+
+		if not roles:
+			await self.get_userroles(sor, userid)
+
+		return self.check_roles_path(roles, path)
+	
 
 	async def get_user_perms_paths(self, userid):
 		cup = await self.get_cached_user_cup(userid)
