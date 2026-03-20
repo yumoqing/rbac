@@ -44,7 +44,6 @@ where a.id = c.userid
 	def check_roles_path(self, roles, path):
 		for role in roles:
 			paths = self.rp_caches.get(role)
-			debug(f'{role=},{path}, {paths=}')
 			return path in paths
 
 	async def is_user_has_path_perm(self, userid, path):
