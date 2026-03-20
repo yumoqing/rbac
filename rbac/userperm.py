@@ -46,18 +46,16 @@ where a.id = c.userid
 			return path in paths
 
 	async def is_user_has_path_perm(self, userid, path):
-		roles = None
-		if self.ur_caches is None:
-			async with get_sor_context(env, 'rbac') as sor:
-				await self.load_roleperms(sor)
-				if userid:
-					roles = self.ur_caches.get(userid)
-					if not roles:
-						await self.get_userroles(sor, userid)
-					roles = self.ur_caches.get(userid)
-
+		roles = self.ur_caches.get(userid)
 		if userid is None:
 			roles = ['anonymous']
+
+		if self.rp_caches is None or not roles:
+			async with get_sor_context(env, 'rbac') as sor:
+				await self.load_roleperms(sor)
+				if not roles:
+					await self.get_userroles(sor, userid)
+				roles = self.ur_caches.get(userid)
 
 		return self.check_roles_path(roles, path)
 	
