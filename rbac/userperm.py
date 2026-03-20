@@ -53,7 +53,6 @@ where a.id = c.userid
 			paths = [ u.path for u in ups ]
 			cup = CacheUP(userid, paths)
 			self.cups[userid] = cup
-			self.cups[userid] = CacheUp(userid, [])
 
 			usercnt = len([u for u in self.cups.keys()])
 			if usercnt > self.max_cache_user:
