@@ -60,7 +60,7 @@ where a.id = c.userid
 				del self.cups[e['userid']]
 			return cup
 			
-	async def is_user_has_path_perm(self, request, userid, path):
+	async def is_user_has_path_perm(self, userid, path):
 		paths = await self.get_user_perms_paths(userid)
 		if path in paths:
 			return True
