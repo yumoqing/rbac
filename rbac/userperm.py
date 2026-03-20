@@ -14,9 +14,10 @@ class UserPermisions:
 	
 	async def load_roleperms(self, sor):
 		self.rp_caches = {}
-		sql_all =  """select a.orgtypeid, a.name, b.path 
-from rolepermission a, permission b
+		sql_all =  """select c.orgtypeid, c.name, b.path 
+from rolepermission a, permission b, role c
 where a.permid = b.id
+	and c.id = a.roleid
 order by a.orgtypeid, a.name"""
 		recs = await sor.sqlExe(sql_all, {})
 		for r in recs:
