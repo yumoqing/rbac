@@ -1,5 +1,5 @@
 import time
-from sqlor.dbpools import DBPools
+from sqlor.dbpools import DBPools, get_sor_context
 from ahserver.serverenv import ServerEnv
 from appPublic.Singleton import SingletonDecorator
 from appPublic.log import debug, exception, error
@@ -51,6 +51,7 @@ where a.id = c.userid
 			roles = ['anonymous']
 
 		if self.rp_caches is None or not roles:
+			env = ServerEnv()
 			async with get_sor_context(env, 'rbac') as sor:
 				await self.load_roleperms(sor)
 				if not roles:
