@@ -57,7 +57,7 @@ where a.id = c.userid
 				await self.load_roleperms(sor)
 				if not roles:
 					await self.get_userroles(sor, userid)
-				roles = self.ur_caches.get(userid)
+					roles = self.ur_caches.get(userid)
 
 		return self.check_roles_path(roles, path)
 	
