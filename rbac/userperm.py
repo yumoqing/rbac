@@ -10,7 +10,7 @@ class UserPermisions:
 		self.max_cache_user = max_cache_user
 		self.cups = {}
 		self.rp_caches = None
-		self ur_caches = {}
+		self.ur_caches = {}
 	
 	async def load_roleperms(self, sor):
 		self.rp_caches = {}
