@@ -36,9 +36,9 @@ where a.id = c.userid
 	and a.id = ${userid}$''', {'userid': userid})
 		roles = ['*.*']		# 登录用户
 		for r in recs:
-			append(f'{r.orgtypeid}.{r.name}')
-			append(f'{r.orgtypeid}.*')
-			append(f'*.{r.name}')
+			roles.append(f'{r.orgtypeid}.{r.name}')
+			roles.append(f'{r.orgtypeid}.*')
+			roles.append(f'*.{r.name}')
 		self.ur_caches[userid] = sorted(list(set(roles)))
 
 	def check_roles_path(self, roles, path):
