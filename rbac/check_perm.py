@@ -13,6 +13,7 @@ from appPublic.uniqueID import getID
 from ahserver.auth_api import AuthAPI, user_login
 from ahserver.globalEnv import password_encode
 from ahserver.serverenv import ServerEnv, get_serverenv, set_serverenv
+from .userperm import UserPermisions
 
 async def get_org_users(orgid):
 	env = ServerEnv()
@@ -92,13 +93,27 @@ async def register_user(sor, ns):
 		debug('password not match')
 		return False
 	ns.password = password_encode(ns.password)
+	recs = await sor.R('users', {'username': ns.username})
+	if recs:
+		return {
+			"status": "error",
+			"data": {
+				"message": f"username({ns.username}) exists",
+				"user": recs[0]
+			}
+		}
 	id = getID()
 	ns.id = id
 	ns.orgid = id
 	ns1 = DictObject(id=id, orgname=ns.username)
 	await create_org(sor, ns1)
 	await create_user(sor, ns)
-	return id
+	return {
+		"status": "ok",
+		"data": {
+			"user": ns
+		}
+	}
 
 def get_dbname():
 	f = get_serverenv('get_module_dbname')
@@ -160,6 +175,12 @@ where c.userid = ${userid}$
 	async with db.sqlorContext(dbname) as sor:
 		if userid is None:
 			userid = await getAuthenticationUserid(sor, request)
+	uperm = UserPermisions()
+	ret = await uperm.is_user_has_path_perm(userid, path)
+	debug(f'{userid=}, {path=} permission is {ret}')
+	return ret
+	"""
+
 		perms = await sor.R('permission', {'path':path})
 		if len(perms) == 0:
 			debug(f'{path=} not found in permission, can access')
@@ -179,6 +200,7 @@ where c.userid = ${userid}$
 	e = db.e_except
 	debug(f'objcheckperm() error happened {userid}, {path}, {e}\n{format_exc()}')
 	return False
+	"""
 
 registered_auth_methods = {
 	"Basic ": basic_auth

@@ -22,4 +22,47 @@ if not f:
 		}
 	}
 
+ns = {
+	"username": params_kw.cellphone,
+	"password": "^&%UHI",
+	"cfm_password": "^&%UHI",
+	"mobile": params_kw.cellphone,
+	"user_status": "0"
+}
+async with get_sor_context(request._run_ns, 'rbac') as sor:
+	recs = await R('users', {'mobile': params_kw.cellphone})
+	if recs:
+		if len(recs) == 1:
+			r = recs[0]
+			await remember_user(r.id, username=r.username, userorgid=r.orgid)
+			return {
+				"status": "ok",
+				"data":{
+					"user": r
+				}
+			}
+		if params_kw.selected_id:
+			for r in recs:
+				if r.id == params_kw.selected_id:
+					await remember_user(r.id, username=r.username, userorgid=r.orgid)
+					return {
+						"status": "ok",
+						"data":{
+							"user": r
+						}
+					}
+		else:
+			return {
+				"status": "choose",
+				"data": {
+					"users": recs
+				}
+			}
+
+	d = await register_user(sor, ns)
+	if d['status'] == 'error':
+		return d
+	
+	r = d['data']['user']
+	await remember_user(r.id, username=r.username, userorgid=r.orgid)
 
