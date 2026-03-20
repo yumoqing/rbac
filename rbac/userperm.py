@@ -34,7 +34,7 @@ from users a, role b, userrole c
 where a.id = c.userid
 	and c.roleid = b.id
 	and a.id = ${userid}$''', {'userid': userid})
-		roles = ['*.*']		# 登录用户
+		roles = ['any', '*.*']		# 登录用户
 		for r in recs:
 			roles.append(f'{r.orgtypeid}.{r.name}')
 			roles.append(f'{r.orgtypeid}.*')
@@ -51,7 +51,7 @@ where a.id = c.userid
 	async def is_user_has_path_perm(self, userid, path):
 		roles = self.ur_caches.get(userid)
 		if userid is None:
-			roles = ['anonymous']
+			roles = ['any', 'anonymous']
 
 		if self.rp_caches is None or not roles:
 			env = ServerEnv()
