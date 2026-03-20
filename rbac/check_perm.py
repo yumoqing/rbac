@@ -158,9 +158,10 @@ where c.userid = ${userid}$
 	async with db.sqlorContext(dbname) as sor:
 		if userid is None:
 			userid = await getAuthenticationUserid(sor, request)
-	uperm = UserPermisions()
+	uperm = UserPermissions()
 	ret = await uperm.is_user_has_path_perm(userid, path)
-	debug(f'{userid=}, {path=} permission is {ret}')
+	roles = await uperm.get_user_roles(userid)
+	debug(f'{userid=}, {path=} permission is {ret},userroles={roles}')
 	return ret
 	"""
 
