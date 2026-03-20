@@ -161,7 +161,7 @@ where c.userid = ${userid}$
 	uperm = UserPermissions()
 	ret = await uperm.is_user_has_path_perm(userid, path)
 	roles = await uperm.get_user_roles(userid)
-	rp_keys = [k for k in uperm.self.rp_caches.keys()]
+	rp_keys = [k for k in uperm.rp_caches.keys()]
 	debug(f'{userid=}, {path=} permission is {ret},userroles={roles}, {rp_keys}')
 	return ret
 	"""
