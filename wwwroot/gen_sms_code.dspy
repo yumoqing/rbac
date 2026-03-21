@@ -21,6 +21,6 @@ return {
 	"status": "ok",
 	"data": {
 		"message": "短信码已生成",
-		"id": id
+		"key": id
 	}
 }

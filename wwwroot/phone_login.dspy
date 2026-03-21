@@ -1,5 +1,5 @@
 # 用短信模块检查验证码是否正确
-if params_kw.cellphone:
+if params_kw.cellphone is None:
 	return {
 		"status": "error",
 		"data":{
