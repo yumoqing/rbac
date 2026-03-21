@@ -10,7 +10,7 @@ if phone is None:
 status, timeout = await sms_engine.generate_sms_code(phone)
 if not status:
 	return {
-		status": "error",
+		"status": "error",
 		"data": {
 			message": f'为{phone}生成的手机号出错"
 		}
