@@ -160,12 +160,10 @@ where c.userid = ${userid}$
 			userid = await getAuthenticationUserid(sor, request)
 	uperm = UserPermissions()
 	ret = await uperm.is_user_has_path_perm(userid, path)
-	"""
 	if not ret:
 		roles = await uperm.get_user_roles(userid)
 		rp_keys = [k for k in uperm.rp_caches.keys()]
 		debug(f'{userid=}, {path=} permission is {ret},userroles={roles}')
-	"""
 	return ret
 
 registered_auth_methods = {
