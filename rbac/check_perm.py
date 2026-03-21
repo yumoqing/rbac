@@ -160,32 +160,13 @@ where c.userid = ${userid}$
 			userid = await getAuthenticationUserid(sor, request)
 	uperm = UserPermissions()
 	ret = await uperm.is_user_has_path_perm(userid, path)
-	roles = await uperm.get_user_roles(userid)
-	rp_keys = [k for k in uperm.rp_caches.keys()]
-	debug(f'{userid=}, {path=} permission is {ret},userroles={roles}, {rp_keys}')
+	"""
+	if not ret:
+		roles = await uperm.get_user_roles(userid)
+		rp_keys = [k for k in uperm.rp_caches.keys()]
+		debug(f'{userid=}, {path=} permission is {ret},userroles={roles}')
+	"""
 	return ret
-	"""
-
-		perms = await sor.R('permission', {'path':path})
-		if len(perms) == 0:
-			debug(f'{path=} not found in permission, can access')
-			return True
-		if userid is None:
-			debug(f'{userid=} is None, can not access {path=}')
-			return False
-
-		recs = await sor.sqlExe(sql, {'path':path, 'userid':userid})
-		for r in recs:
-			id = r['id']
-			if id is not None:
-				debug(f'{userid=} can access {path=}')
-				return True
-		debug(f'{userid=} has not permission to call {path=}')
-		return False
-	e = db.e_except
-	debug(f'objcheckperm() error happened {userid}, {path}, {e}\n{format_exc()}')
-	return False
-	"""
 
 registered_auth_methods = {
 	"Basic ": basic_auth
