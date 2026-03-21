@@ -38,7 +38,7 @@ order by c.orgtypeid, c.name"""
 				k = 'any'
 			elif r.id == 'logined':
 				k = 'logined'
-			else r.orgtypeid:
+			else:
 				k = f'{r.orgtypeid}.{r.name}'
 			arr = self.rp_caches.get(k, [])
 			arr.append(r.path)
