@@ -1,4 +1,5 @@
 # 用短信模块检查验证码是否正确
+debug(f'{params_kw=}')
 if params_kw.cellphone is None:
 	return {
 		"status": "error",
@@ -37,7 +38,7 @@ ns = {
 	"user_status": "0"
 }
 async with get_sor_context(request._run_ns, 'rbac') as sor:
-	recs = await R('users', {'mobile': params_kw.cellphone})
+	recs = await sor.R('users', {'mobile': params_kw.cellphone})
 	if recs:
 		if len(recs) == 1:
 			r = recs[0]
