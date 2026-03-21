@@ -37,6 +37,7 @@ ns = {
 	"mobile": params_kw.cellphone,
 	"user_status": "0"
 }
+udata = DictObject(**ns)
 async with get_sor_context(request._run_ns, 'rbac') as sor:
 	recs = await sor.R('users', {'mobile': params_kw.cellphone})
 	if recs:
@@ -67,7 +68,7 @@ async with get_sor_context(request._run_ns, 'rbac') as sor:
 				}
 			}
 
-	d = await register_user(sor, ns)
+	d = await register_user(sor, udata)
 	if d['status'] == 'error':
 		return d
 	
