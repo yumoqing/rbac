@@ -1,0 +1,15 @@
+async with get_sor_context(request._run_ns, 'rbac') as sor:
+	recs = sor.R('role', {})
+	d = []
+	for r in recs:
+		if r.id in ['anonymous', 'any', 'logined']:
+			continue
+		elif r.orgtypeid == '*' or r.orgtypeid is None:
+			continue
+		elif r.name == '*' or r.name is None:
+			continue
+		else:
+			d.append(f'{r.orgtypeid}.{r.name}')
+		d = sorted(list(set(d)))
+		return d
+	return []
