@@ -1,5 +1,5 @@
 async with get_sor_context(request._run_ns, 'rbac') as sor:
-	recs = sor.R('role', {})
+	recs = await sor.R('role', {})
 	d = []
 	for r in recs:
 		if r.id in ['anonymous', 'any', 'logined']:
