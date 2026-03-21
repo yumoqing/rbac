@@ -8,6 +8,7 @@ async with get_sor_context(request._run_ns, 'rbac') as sor:
 			d.append(f'{r.orgtypeid}.{r.name}')
 			d.append(f'{r.orgtypeid}.*')
 			d.append(f'*.{r.name}')
+		debug(f'roles={d}')
 		d = sorted(list(set(d)))
 		return d
 	return []
