@@ -25,36 +25,36 @@ class UserPermissions:
 
 	async def load_roleperms(self, sor):
 		self.rp_caches = {}
-		sql_all =  """select c.orgtypeid, c.name, b.path 
+		sql_all =  """select c.id, c.orgtypeid, c.name, b.path 
 from rolepermission a, permission b, role c
 where a.permid = b.id
 	and c.id = a.roleid
 order by c.orgtypeid, c.name"""
 		recs = await sor.sqlExe(sql_all, {})
 		for r in recs:
-			k = 'anonymous'
-			if r.name == 'any':
+			if r.id == 'anonymous':
+				k = 'anonymous'
+			elif r.id == 'any':
 				k = 'any'
-			elif r.orgtypeid:
+			elif r.id == 'logined':
+				k = 'logined'
+			else r.orgtypeid:
 				k = f'{r.orgtypeid}.{r.name}'
 			arr = self.rp_caches.get(k, [])
 			arr.append(r.path)
 			self.rp_caches[k] = arr
 
 	async def get_userroles(self, sor, userid):
-		recs = await sor.sqlExe('''select b.orgtypeid, b.name 
+		recs = await sor.sqlExe('''select b.id, b.orgtypeid, b.name 
 from users a, role b, userrole c
 where a.id = c.userid
 	and c.roleid = b.id
 	and a.id = ${userid}$''', {'userid': userid})
-		roles = ['any', '*.*']		# 登录用户
+		roles = ['any', 'logined']		# 登录用户
 		for r in recs:
-			if r.name == 'any':
-				roles.append('any')
-			else:
-				roles.append(f'{r.orgtypeid}.{r.name}')
-				roles.append(f'{r.orgtypeid}.*')
-				roles.append(f'*.{r.name}')
+			roles.append(f'{r.orgtypeid}.{r.name}')
+			roles.append(f'{r.orgtypeid}.*')
+			roles.append(f'*.{r.name}')
 		self.ur_caches[userid] = sorted(list(set(roles)))
 
 	def check_roles_path(self, roles, path):
