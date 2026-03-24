@@ -58,7 +58,7 @@ where a.orgid = b.orgid
 	and a.id = ${userid}$"""
 	recs = await sor.sqlExe(sql, {'userid': userid})
 	for role in roles:
-		otid, rname = roles.split('.')
+		otid, rname = role.split('.')
 		ns = DictObject()
 		if otid != '*':
 			ns.otid = otid
