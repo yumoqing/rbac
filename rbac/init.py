@@ -42,4 +42,4 @@ def load_rbac():
 	env.get_org_users = get_org_users
 	env.sor_get_org_users = sor_get_org_users
 	env.get_owner_orgid = get_owner_orgid
-
+	env.sor_add_user_roles = sor_add_user_roles
