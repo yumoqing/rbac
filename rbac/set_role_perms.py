@@ -24,7 +24,7 @@ where a.id = b.userid
 	and c.name = ${name}$"""
 	recs = await sor.sqlExe(sql, {
 		'userid': userid,
-		'orgtypeid': orgypeid,
+		'orgtypeid': orgtypeid,
 		'name': name
 	})
 	if recs:
@@ -32,7 +32,7 @@ where a.id = b.userid
 	ns = DictObject()
 	ns.id = getID()
 	roles = await sor.R('role', {
-		'orgtypeid': orgypeid,
+		'orgtypeid': orgtypeid,
         'name': name
     })
 	if not roles:
