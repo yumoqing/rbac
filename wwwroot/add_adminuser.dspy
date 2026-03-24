@@ -12,12 +12,7 @@ debug(f'{dbname=}')
 async with db.sqlorContext(dbname) as sor:
 	await sor.C('users',ns.copy())
 	uid = ns['id']
-	ns = {
-		'id':uuid(),
-		'userid':uid,
-		'roleid':'admin'
-	}
-	await sor.C('userrole', ns.copy())
+	await sor_add_user_roles(ns['id'], ['*.admin']
 	return UiMessage(title='Success', message='admin user added')
 return UiError(title='Error', message='Error happened when add admin user')
 		

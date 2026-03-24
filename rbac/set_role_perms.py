@@ -5,6 +5,72 @@ from sqlor.dbpools import DBPools
 from appPublic.jsonConfig import getConfig
 from appPublic.uniqueID import getID
 from appPublic.asynciorun import run
+from ahserver.serverenv import ServerEnv
+
+async def sor_get_user_roles(sor, username):
+	env = ServerEnv()
+	sql = """select a.id,a.username, c.orgtypeid, c.name from users a, userrole b, role c where a.id = b.userid and b.roleid = c.id and a.username=${username}$"""
+	recs = sor.sqlExe(sql, {'username': username})
+	return recs
+
+async def safe_add_user_role(sor, userid, orgtypeid, name):
+	sql = """select b.* 
+from users a, userrole b, role c
+where a.id = b.userid
+	and c.id = b.roleid
+	and a.id = ${userid}$
+	and c.orgtypeid = ${orgtypeid}$
+	and c.name = ${name}$"""
+	recs = await sor.sqlExe(sql, {
+		'userid': userid,
+		'orgtypeid': orgypeid,
+		'name': name
+	})
+	if recs:
+		return recs[0]
+	ns = DictObject()
+	ns.id = getID()
+	roles = await sor.R('role', {
+		'orgtypeid': orgypeid,
+        'name': name
+    })
+	if not roles:
+		return None
+	ns.roleid = roles[0].id
+	ns.userid = userid
+	await sor.C('userrole', ns.copy())
+	return ns
+
+async def sor_add_user_roles(sor, userid, roles):
+	"""
+	roles is a list of role, each role has follow format
+	orgtypeid1.*
+	*.rolename1
+	tttt.yyyyyy
+	"""
+	sql = """select
+a.id, a.username, c.orgtypeid, c.name
+from users a, orgtypes b, role c
+where a.orgid = b.orgid
+	and b.orgtypeid = c.orgtypeid
+	and c.orgtypeid != '*'
+	and c.name != '*'
+	and a.id = ${userid}$"""
+	recs = await sor.sqlExe(sql, {'userid': userid})
+	for role in roles:
+		otid, rname = roles.split('.')
+		ns = DictObject()
+		if otid != '*':
+			ns.otid = otid
+		if rname != '*':
+			ns.rname = rname
+		}
+		for r in recs:
+			if ns.otid and ns.otid != r.orgtypeid:
+				continue
+			if ns.rname and ns.rname != r.name:
+				continue
+			await safe_add_user_role(userid, r.orgtypeid, r.name)
 
 async def set_role_perm(dbname, module, orgtype, role, tblname):
 	db = DBPools()
