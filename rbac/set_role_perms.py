@@ -4,6 +4,7 @@ import asyncio
 from sqlor.dbpools import DBPools
 from appPublic.jsonConfig import getConfig
 from appPublic.uniqueID import getID
+from appPublic.dictObject import DictObject
 from appPublic.asynciorun import run
 from ahserver.serverenv import ServerEnv
 
