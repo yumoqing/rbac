@@ -70,7 +70,7 @@ where a.orgid = b.orgid
 				continue
 			if ns.rname and ns.rname != r.name:
 				continue
-			await safe_add_user_role(userid, r.orgtypeid, r.name)
+			await safe_add_user_role(sor, userid, r.orgtypeid, r.name)
 
 async def set_role_perm(dbname, module, orgtype, role, tblname):
 	db = DBPools()
