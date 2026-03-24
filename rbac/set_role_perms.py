@@ -64,7 +64,6 @@ where a.orgid = b.orgid
 			ns.otid = otid
 		if rname != '*':
 			ns.rname = rname
-		}
 		for r in recs:
 			if ns.otid and ns.otid != r.orgtypeid:
 				continue
