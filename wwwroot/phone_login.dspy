@@ -71,6 +71,11 @@ async with get_sor_context(request._run_ns, 'rbac') as sor:
 	d = await register_user(sor, udata)
 	if d['status'] == 'error':
 		return d
+    try:
+        ownerid = await get_owner_orgid(sor, orgid)
+        await openCustomerAccounts(sor, ownerid, orgid)
+    except Exception as e:
+        exception(f'{e}')
 	
 	r = d['data']['user']
 	await remember_user(r.id, username=r.username, userorgid=r.orgid)
