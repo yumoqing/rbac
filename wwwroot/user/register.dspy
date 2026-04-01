@@ -6,7 +6,7 @@ async with db.sqlorContext(dbname) as sor:
 	data = DictObject(**data)
 	try:
 		if data['status'] == 'error':
-			debug(f"{data.data.message}"
+			debug(f"{data.data.message}")
 			return UiError(title='Error', message=data.data.message)
 		orgid = data.data.user.orgid
 		await openCustomerAccounts(sor, '0', orgid)
