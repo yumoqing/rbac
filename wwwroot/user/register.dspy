@@ -2,12 +2,17 @@ debug(f'{params_kw=}')
 db = DBPools()
 dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
-	orgid = await register_user(sor, params_kw)
+	data = await register_user(sor, params_kw)
+	data = DictObject(**data)
 	try:
+		if data['status'] == 'error':
+			debug(f"{data.data.message}"
+			return UiError(title='Error', message=data.data.message)
+		orgid = data.data.user.orgid
 		await openCustomerAccounts(sor, '0', orgid)
 		debug(f'{orgid} accounts opened')
 	except Exception as e:
-		exception(f'{e}')
+		exception(f'{e},{orgid=}')
 
 	return UiMessage(title="Success", message=f"register success {orgid}")
 return UiError(title='Error', message="register failed")
