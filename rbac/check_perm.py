@@ -144,7 +144,6 @@ async def getAuthenticationUserid(sor, request):
 	return None
 	
 async def objcheckperm(obj, request, userid, path):
-	debug(f'check permission: {userid=}, {path=}')
 	sql = """select distinct a.*, c.userid from
 (select id, path from permission where path=${path}$) a
 right join
@@ -163,7 +162,7 @@ where c.userid = ${userid}$
 	if not ret:
 		roles = await uperm.get_user_roles(userid)
 		rp_keys = [k for k in uperm.rp_caches.keys()]
-		debug(f'{userid=}, {path=} permission is {ret},userroles={roles}')
+		debug(f'{userid=}, {path=} permission check failed,userroles={roles}')
 	return ret
 
 registered_auth_methods = {
