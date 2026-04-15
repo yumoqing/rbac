@@ -2,6 +2,7 @@
 	"id":"login_window",
 	"widgettype":"PopupWindow",
 	"options":{
+		"title": "登录",
 		"auto_open":true,
 		"anthor":"cc",
 		"cwidth":22,
