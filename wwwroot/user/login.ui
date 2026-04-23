@@ -2,7 +2,7 @@
 	"id":"login_window",
 	"widgettype":"PopupWindow",
 	"options":{
-		"title": "登录",
+		"title": "登录/注册",
 		"auto_open":true,
 		"anthor":"cc",
 		"cwidth":22,
@@ -90,7 +90,7 @@
 							"datamethod":"getValue",
 							"target":"self",
 							"options":{
-								"url":"{{entire_url('gen_code.dspy')}}"
+								"url":"{{entire_url('../gen_sms_code.dspy')}}"
 							}
 						},
 						{
@@ -103,16 +103,6 @@
 							}
 						}
 					]
-				}
-			},
-			{
-				"name":"wechat",
-				"label":"微信",
-				"content":{
-					"widgettype":"urlwidget",
-					"options":{
-						"url":"{{entire_url('wechat_login.ui')}}"
-					}
 				}
 			}
 		]

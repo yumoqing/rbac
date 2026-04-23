@@ -33,6 +33,8 @@
 			"actiontype":"urlwidget",
 			"target":"self",
 			"options":{
+				"params": {},
+				"method": "POST",
 				"url":"{{entire_url('add_provider.dspy')}}"
 			}
 		}
