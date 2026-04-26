@@ -27,8 +27,8 @@ async with db.sqlorContext(dbname) as sor:
 	last_fail = getattr(user, 'last_login_fail', None)
 	if fail_count >= 3 and last_fail:
 		try:
-			stored = datetime.strptime(str(last_fail), '%Y-%m-%d %H:%M:%S')
-			elapsed = (datetime.now() - stored).total_seconds()
+			stored = datetime.datetime.strptime(str(last_fail), '%Y-%m-%d %H:%M:%S')
+			elapsed = (datetime.datetime.now() - stored).total_seconds()
 			if elapsed < 300:
 				return {
 					"widgettype":"Error",
@@ -51,7 +51,7 @@ async with db.sqlorContext(dbname) as sor:
 	r = await sor.sqlExe('select * from users where username=${username}$ and password=${password}$', ns.copy())
 	if len(r) == 0:
 		# Atomic increment -- standard SQL
-		now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		await sor.sqlExe("""
 			UPDATE users 
 			SET login_fail_count = login_fail_count + 1,
@@ -73,7 +73,7 @@ async with db.sqlorContext(dbname) as sor:
 			}
 		}
 	# Success -- atomic reset
-	now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	await sor.sqlExe("""
 		UPDATE users 
 		SET login_fail_count = 0, last_login_fail = NULL,
