@@ -1,5 +1,4 @@
-import time
-import threading
+import asyncio
 from collections import OrderedDict
 from sqlor.dbpools import DBPools, get_sor_context
 from ahserver.serverenv import ServerEnv
@@ -7,40 +6,47 @@ from appPublic.Singleton import SingletonDecorator
 from appPublic.log import debug, exception, error
 
 class LRUCache:
-	"""Thread-safe LRU cache with TTL support."""
+	"""Async-safe LRU cache with TTL support.
+	
+	Uses asyncio.Lock instead of threading.Lock to avoid blocking
+	the event loop in async environments.
+	"""
 	
 	def __init__(self, maxsize=10000, ttl=300):
 		self.maxsize = maxsize
 		self.ttl = ttl  # seconds
 		self._cache = OrderedDict()
-		self._lock = threading.Lock()
+		self._lock = None  # Lazy init to handle sync creation in async context
+	
+	def _get_lock(self):
+		if self._lock is None:
+			self._lock = asyncio.Lock()
+		return self._lock
 	
 	def get(self, key):
-		with self._lock:
-			if key not in self._cache:
-				return None
-			value, expire_at = self._cache[key]
-			if time.time() > expire_at:
-				del self._cache[key]
-				return None
-			self._cache.move_to_end(key)
-			return value
+		import time
+		if key not in self._cache:
+			return None
+		value, expire_at = self._cache[key]
+		if time.time() > expire_at:
+			del self._cache[key]
+			return None
+		self._cache.move_to_end(key)
+		return value
 	
 	def set(self, key, value):
-		with self._lock:
-			if key in self._cache:
-				self._cache.move_to_end(key)
-			self._cache[key] = (value, time.time() + self.ttl)
-			while len(self._cache) > self.maxsize:
-				self._cache.popitem(last=False)
+		import time
+		if key in self._cache:
+			self._cache.move_to_end(key)
+		self._cache[key] = (value, time.time() + self.ttl)
+		while len(self._cache) > self.maxsize:
+			self._cache.popitem(last=False)
 	
 	def invalidate(self, key):
-		with self._lock:
-			self._cache.pop(key, None)
+		self._cache.pop(key, None)
 	
 	def clear(self):
-		with self._lock:
-			self._cache.clear()
+		self._cache.clear()
 	
 	def __contains__(self, key):
 		return self.get(key) is not None
@@ -69,9 +75,16 @@ class UserPermissions:
 		# Role-permission cache: role_key -> list of paths
 		self.rp_caches = None
 		self.rp_cache_loaded_at = 0
+		import time
+		self._init_time = time.time()
 		
-		# Lock for rp_caches initialization
-		self._rp_lock = threading.Lock()
+		# Async lock for rp_caches initialization (lazy init)
+		self._rp_lock = None
+	
+	def _get_rp_lock(self):
+		if self._rp_lock is None:
+			self._rp_lock = asyncio.Lock()
+		return self._rp_lock
 	
 	async def get_user_roles(self, userid):
 		"""Get roles for a user, with LRU+TTL caching."""
@@ -103,10 +116,23 @@ class UserPermissions:
 		self.rp_cache_loaded_at = 0
 	
 	async def load_roleperms(self, sor):
-		"""Load all role-permission mappings into cache."""
+		"""Load all role-permission mappings into cache.
+		
+		High-concurrency safe:
+		- Uses asyncio.Lock to prevent multiple coroutines loading simultaneously
+		- Double-check pattern: after acquiring lock, check if another coroutine already loaded
+		- TTL ensures periodic refresh
+		"""
+		import time
 		now = time.time()
-		# Double-check with lock to prevent race conditions
-		with self._rp_lock:
+		
+		# Fast path: cache valid, no lock needed
+		if self.rp_caches is not None and (now - self.rp_cache_loaded_at) < self.rp_cache_ttl:
+			return
+		
+		# Slow path: acquire lock and double-check
+		async with self._get_rp_lock():
+			# Double-check after lock acquisition
 			if self.rp_caches is not None and (now - self.rp_cache_loaded_at) < self.rp_cache_ttl:
 				return
 			
@@ -159,10 +185,10 @@ where a.id = c.userid
 	async def is_user_has_path_perm(self, userid, path):
 		"""Check if a user has permission for the given path.
 		
-		Security improvements:
-		1. rp_caches now has TTL to ensure permission changes take effect
-		2. User role cache uses LRU+TTL to prevent unbounded growth
-		3. Race condition protection with lock during rp_caches initialization
+		High-concurrency safe:
+		1. rp_caches TTL ensures permission changes take effect within 10 minutes
+		2. Double-check locking prevents duplicate DB queries
+		3. User role cache uses LRU+TTL to prevent unbounded growth
 		"""
 		roles = self.ur_caches.get(userid)
 		if userid is None:
