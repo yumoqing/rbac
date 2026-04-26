@@ -1,6 +1,7 @@
 import time
 
 from traceback import format_exc
+from datetime import datetime
 from aiohttp import BasicAuth
 from sqlor.dbpools import DBPools, get_sor_context
 from appPublic.registerfunction import RegisterFunction
@@ -14,6 +15,31 @@ from ahserver.auth_api import AuthAPI, user_login
 from ahserver.globalEnv import password_encode
 from ahserver.serverenv import ServerEnv, get_serverenv, set_serverenv
 from .userperm import UserPermissions
+
+
+# DB-agnostic time constants
+LOGIN_LOCKOUT_DURATION = 300  # 5 minutes in seconds
+
+
+def _now_ts():
+	"""Current time as standard SQL timestamp string."""
+	return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+
+def _is_locked(fail_count, last_fail, lockout_seconds=LOGIN_LOCKOUT_DURATION):
+	"""Check if user is locked out. Pure Python, DB-agnostic."""
+	if fail_count < 3 or last_fail is None:
+		return False
+	try:
+		if isinstance(last_fail, str):
+			stored = datetime.strptime(last_fail, '%Y-%m-%d %H:%M:%S')
+		elif isinstance(last_fail, datetime):
+			stored = last_fail
+		else:
+			return False
+		return (datetime.now() - stored).total_seconds() < lockout_seconds
+	except (ValueError, TypeError):
+		return False
 
 async def get_org_users(orgid):
 	env = ServerEnv()
@@ -111,36 +137,35 @@ async def checkUserPassword(request, username, password):
 	"""Authenticate user with password, supporting login lockout mechanism.
 	
 	High-concurrency safe:
-	- Uses atomic UPDATE for fail_count increment (no SELECT-then-UPDATE race)
-	- Lockout check uses database-level comparison
+	- Atomic UPDATE for fail_count increment (standard SQL, all databases)
+	- Lockout check done in Python layer (no DB-specific functions)
 	- Password verified with single atomic query
 	"""
 	db = DBPools()
 	dbname = get_dbname()
 	async with db.sqlorContext(dbname) as sor:
-		# Check lockout status atomically in SQL
-		# Returns user record only if NOT currently locked
-		sql = """select * from users where username=${username}$
-			and not (
-				login_fail_count >= 3 
-				and last_login_fail is not null
-				and last_login_fail > DATE_SUB(NOW(), INTERVAL 300 SECOND)
-			)"""
+		# Get user record with lockout fields
+		sql = "select * from users where username=${username}$"
 		recs = await sor.sqlExe(sql, {'username': username})
 		if len(recs) < 1:
-			# Either user not found, or locked out
-			debug(f'User {username} not found or locked out')
+			debug(f'User {username} not found')
 			return False
 		
 		user = recs[0]
+		fail_count = getattr(user, 'login_fail_count', 0) or 0
+		last_fail = getattr(user, 'last_login_fail', None)
 		
-		# Verify password with single atomic query
+		# Lockout check in Python (DB-agnostic)
+		if _is_locked(fail_count, last_fail):
+			debug(f'User {username} locked out')
+			return False
+		
+		# Verify password with standard SQL
 		sql = "select * from users where username=${username}$ and password=${password}$"
 		recs = await sor.sqlExe(sql, {'username': username, 'password': password})
 		if len(recs) < 1:
-			# Password wrong - atomically increment fail count
-			# Database-level increment prevents race conditions
-			now_str = curDateString('%Y-%m-%d %H:%M:%S')
+			# Atomic increment -- standard SQL, works on all databases
+			now_str = _now_ts()
 			await sor.sqlExe("""
 				UPDATE users 
 				SET login_fail_count = login_fail_count + 1,
@@ -150,8 +175,8 @@ async def checkUserPassword(request, username, password):
 			debug(f'Login failed for {username}, fail_count incremented')
 			return False
 		
-		# Login successful - atomically reset counters and update last_login
-		now_str = curDateString('%Y-%m-%d %H:%M:%S')
+		# Login successful -- atomic reset
+		now_str = _now_ts()
 		await sor.sqlExe("""
 			UPDATE users 
 			SET login_fail_count = 0,
@@ -171,24 +196,26 @@ async def basic_auth(sor, request):
 	m = auther.decode(auth)
 	username = m.login
 	password = password_encode(m.password)
-	# Check lockout atomically in SQL (same pattern as checkUserPassword)
-	sql = """select * from users where username=${username}$ 
-		and password=${password}$
-		and not (
-			login_fail_count >= 3 
-			and last_login_fail is not null
-			and last_login_fail > DATE_SUB(NOW(), INTERVAL 300 SECOND)
-		)"""
+	# Standard SQL -- no DB-specific functions
+	sql = "select * from users where username=${username}$ and password=${password}$"
 	recs = await sor.sqlExe(sql, {'username':username,'password':password})
 	if len(recs) < 1:
 		return None
-	# Update last_login on successful basic auth
+	# Check lockout in Python layer (DB-agnostic)
+	user = recs[0]
+	fail_count = getattr(user, 'login_fail_count', 0) or 0
+	last_fail = getattr(user, 'last_login_fail', None)
+	if _is_locked(fail_count, last_fail):
+		debug(f'User {username} locked out via basic auth')
+		return None
+	# Update last_login on successful basic auth (standard SQL)
+	now_str = _now_ts()
 	await sor.sqlExe("""
 		UPDATE users 
 		SET login_fail_count = 0, last_login_fail = NULL,
-		    last_login = NOW()
+		    last_login = ${now}$
 		WHERE id = ${id}$
-	""", {'id': recs[0].id})
+	""", {'id': recs[0].id, 'now': now_str})
 	await user_login(request, recs[0].id, 
 							username=recs[0].username, 
 							userorgid=recs[0].orgid)
