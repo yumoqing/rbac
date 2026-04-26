@@ -9,7 +9,7 @@ from appPublic.rc4 import password, unpassword
 from appPublic.jsonConfig import getConfig
 from appPublic.log import debug, exception
 from appPublic.dictObject import DictObject
-from appPublic.timeUtils import curDateString
+from appPublic.timeUtils import timestampstr
 from appPublic.uniqueID import getID
 from ahserver.auth_api import AuthAPI, user_login
 from ahserver.globalEnv import password_encode
@@ -115,7 +115,7 @@ async def register_user(sor, ns):
 	ns.id = id
 	ns.orgid = id
 	# Set registration timestamp
-	ns.created_at = curDateString('%Y-%m-%d %H:%M:%S')
+	ns.created_at = timestampstr()
 	ns.login_fail_count = 0
 	ns1 = DictObject(id=id, orgname=ns.username)
 	await create_org(sor, ns1)
