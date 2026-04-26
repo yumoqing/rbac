@@ -27,7 +27,6 @@ async with db.sqlorContext(dbname) as sor:
 	last_fail = getattr(user, 'last_login_fail', None)
 	if fail_count >= 3 and last_fail:
 		try:
-			from datetime import datetime
 			stored = datetime.strptime(str(last_fail), '%Y-%m-%d %H:%M:%S')
 			elapsed = (datetime.now() - stored).total_seconds()
 			if elapsed < 300:
