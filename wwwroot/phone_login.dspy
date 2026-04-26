@@ -38,65 +38,74 @@ ns = {
 	"user_status": "0"
 }
 udata = DictObject(**ns)
-async with get_sor_context(request._run_ns, 'rbac') as sor:
-	recs = await sor.R('users', {'mobile': params_kw.cellphone})
-	if recs:
-		if len(recs) == 1:
-			r = recs[0]
-			# Update last_login atomically (standard SQL, no DB-specific functions)
-			now_str = timestampstr()
-			await sor.sqlExe("""
-				UPDATE users 
-				SET last_login = ${now}$, login_fail_count = 0, 
-				    last_login_fail = NULL
-				WHERE id = ${id}$
-			""", {'id': r.id, 'now': now_str})
-			await remember_user(r.id, username=r.username, userorgid=r.orgid)
-			return {
-				"status": "ok",
-				"data":{
-					"user": r
-				}
-			}
-		if params_kw.selected_id:
-			for r in recs:
-				if r.id == params_kw.selected_id:
-					now_str = timestampstr()
-					await sor.sqlExe("""
-						UPDATE users 
-						SET last_login = ${now}$, login_fail_count = 0, 
-						    last_login_fail = NULL
-						WHERE id = ${id}$
-					""", {'id': r.id, 'now': now_str})
-					await remember_user(r.id, username=r.username, userorgid=r.orgid)
-					return {
-						"status": "ok",
-						"data":{
-							"user": r
-						}
+try:
+	async with get_sor_context(request._run_ns, 'rbac') as sor:
+		recs = await sor.R('users', {'mobile': params_kw.cellphone})
+		if recs:
+			if len(recs) == 1:
+				r = recs[0]
+				# Update last_login atomically (standard SQL, no DB-specific functions)
+				now_str = timestampstr()
+				await sor.sqlExe("""
+					UPDATE users 
+					SET last_login = ${now}$, login_fail_count = 0, 
+						last_login_fail = NULL
+					WHERE id = ${id}$
+				""", {'id': r.id, 'now': now_str})
+				await remember_user(r.id, username=r.username, userorgid=r.orgid)
+				return {
+					"status": "ok",
+					"data":{
+						"user": r
 					}
-		else:
-			return {
-				"status": "choose",
-				"data": {
-					"users": recs
 				}
-			}
+			if params_kw.selected_id:
+				for r in recs:
+					if r.id == params_kw.selected_id:
+						now_str = timestampstr()
+						await sor.sqlExe("""
+							UPDATE users 
+							SET last_login = ${now}$, login_fail_count = 0, 
+								last_login_fail = NULL
+							WHERE id = ${id}$
+						""", {'id': r.id, 'now': now_str})
+						await remember_user(r.id, username=r.username, userorgid=r.orgid)
+						return {
+							"status": "ok",
+							"data":{
+								"user": r
+							}
+						}
+			else:
+				return {
+					"status": "choose",
+					"data": {
+						"users": recs
+					}
+				}
 
-	d = await register_user(sor, udata)
-	if d['status'] == 'error':
-		return d
-	try:
-		ownerid = await get_owner_orgid(sor, orgid)
-		await openCustomerAccounts(sor, ownerid, orgid)
-	except Exception as e:
-		exception(f'{e}')
-	
-	r = d['data']['user']
-	await remember_user(r.id, username=r.username, userorgid=r.orgid)
-	return {
-		"status": "ok",
-		"data":{
-			"user": r
+		d = await register_user(sor, udata)
+		if d['status'] == 'error':
+			return d
+		try:
+			ownerid = await get_owner_orgid(sor, orgid)
+			await openCustomerAccounts(sor, ownerid, orgid)
+		except Exception as e:
+			exception(f'{e}')
+		
+		r = d['data']['user']
+		await remember_user(r.id, username=r.username, userorgid=r.orgid)
+		return {
+			"status": "ok",
+			"data":{
+				"user": r
+			}
 		}
-	}
+except Exception as e:
+	exception(f'Error happend{e}')
+	return {
+	   "status": "error",
+	   "data":{
+		   "message": f"{e}"
+	   }
+   }
