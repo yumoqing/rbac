@@ -10,7 +10,7 @@ async with db.sqlorContext(dbname) as sor:
 	orgid = id
 	await create_org(sor, ns, orgtypes=['provider'])
 	try:
-		await openRetailRelationshipAccounts(sor, ownerid, ownerid, orgid)
+		await openRetailRelationshipAccounts(sor, ownerid, orgid, ownerid)
 	except Exception as e:
 		exception(f'{e}')
 	return {
