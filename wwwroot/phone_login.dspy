@@ -61,7 +61,7 @@ async with get_sor_context(request._run_ns, 'rbac') as sor:
 		if params_kw.selected_id:
 			for r in recs:
 				if r.id == params_kw.selected_id:
-					now_str = curDateString('%Y-%m-%d %H:%M:%S')
+					now_str = curDateString()
 					await sor.sqlExe("""
 						UPDATE users 
 						SET last_login = ${now}$, login_fail_count = 0, 
