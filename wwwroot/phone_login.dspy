@@ -94,4 +94,9 @@ async with get_sor_context(request._run_ns, 'rbac') as sor:
 	
 	r = d['data']['user']
 	await remember_user(r.id, username=r.username, userorgid=r.orgid)
-
+	return {
+		"status": "ok",
+		"data":{
+			"user": r
+		}
+	}
