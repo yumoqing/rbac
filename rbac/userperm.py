@@ -1,50 +1,138 @@
 import time
+import threading
+from collections import OrderedDict
 from sqlor.dbpools import DBPools, get_sor_context
 from ahserver.serverenv import ServerEnv
 from appPublic.Singleton import SingletonDecorator
 from appPublic.log import debug, exception, error
 
+class LRUCache:
+	"""Thread-safe LRU cache with TTL support."""
+	
+	def __init__(self, maxsize=10000, ttl=300):
+		self.maxsize = maxsize
+		self.ttl = ttl  # seconds
+		self._cache = OrderedDict()
+		self._lock = threading.Lock()
+	
+	def get(self, key):
+		with self._lock:
+			if key not in self._cache:
+				return None
+			value, expire_at = self._cache[key]
+			if time.time() > expire_at:
+				del self._cache[key]
+				return None
+			self._cache.move_to_end(key)
+			return value
+	
+	def set(self, key, value):
+		with self._lock:
+			if key in self._cache:
+				self._cache.move_to_end(key)
+			self._cache[key] = (value, time.time() + self.ttl)
+			while len(self._cache) > self.maxsize:
+				self._cache.popitem(last=False)
+	
+	def invalidate(self, key):
+		with self._lock:
+			self._cache.pop(key, None)
+	
+	def clear(self):
+		with self._lock:
+			self._cache.clear()
+	
+	def __contains__(self, key):
+		return self.get(key) is not None
+	
+	def __len__(self):
+		return len(self._cache)
+
+
 @SingletonDecorator
 class UserPermissions:
-	def __init__(self, max_cache_user=10000):
+	def __init__(self, max_cache_user=10000, cache_ttl=300, rp_cache_ttl=600):
+		"""Initialize UserPermissions with secure caching.
+		
+		Args:
+			max_cache_user: Maximum number of user role entries in cache
+			cache_ttl: TTL for user role caches in seconds (default 5 minutes)
+			rp_cache_ttl: TTL for role-permission caches in seconds (default 10 minutes)
+		"""
 		self.max_cache_user = max_cache_user
-		self.cups = {}
+		self.cache_ttl = cache_ttl
+		self.rp_cache_ttl = rp_cache_ttl
+		
+		# LRU cache for user roles: userid -> list of roles
+		self.ur_caches = LRUCache(maxsize=max_cache_user, ttl=cache_ttl)
+		
+		# Role-permission cache: role_key -> list of paths
 		self.rp_caches = None
-		self.ur_caches = {}
+		self.rp_cache_loaded_at = 0
+		
+		# Lock for rp_caches initialization
+		self._rp_lock = threading.Lock()
 	
 	async def get_user_roles(self, userid):
+		"""Get roles for a user, with LRU+TTL caching."""
 		if userid is None:
 			return ['anonymous', 'any']
+		
 		roles = self.ur_caches.get(userid)
 		if roles:
 			return roles
+		
 		async with get_sor_context(ServerEnv(), 'rbac') as sor:
 			await self.get_userroles(sor, userid)
 			return self.ur_caches.get(userid)
 		return None
-
+	
+	def invalidate_user_cache(self, userid):
+		"""Invalidate cache for a specific user.
+		Call this after role changes, user creation, etc.
+		"""
+		self.ur_caches.invalidate(userid)
+	
+	def invalidate_all_user_caches(self):
+		"""Invalidate all user role caches."""
+		self.ur_caches.clear()
+	
+	def invalidate_rp_cache(self):
+		"""Invalidate role-permission cache (after permission changes)."""
+		self.rp_caches = None
+		self.rp_cache_loaded_at = 0
+	
 	async def load_roleperms(self, sor):
-		self.rp_caches = {}
-		sql_all =  """select c.id, c.orgtypeid, c.name, b.path 
+		"""Load all role-permission mappings into cache."""
+		now = time.time()
+		# Double-check with lock to prevent race conditions
+		with self._rp_lock:
+			if self.rp_caches is not None and (now - self.rp_cache_loaded_at) < self.rp_cache_ttl:
+				return
+			
+			self.rp_caches = {}
+			sql_all = """select c.id, c.orgtypeid, c.name, b.path 
 from rolepermission a, permission b, role c
 where a.permid = b.id
 	and c.id = a.roleid
 order by c.orgtypeid, c.name"""
-		recs = await sor.sqlExe(sql_all, {})
-		for r in recs:
-			if r.id == 'anonymous':
-				k = 'anonymous'
-			elif r.id == 'any':
-				k = 'any'
-			elif r.id == 'logined':
-				k = 'logined'
-			else:
-				k = f'{r.orgtypeid}.{r.name}'
-			arr = self.rp_caches.get(k, [])
-			arr.append(r.path)
-			self.rp_caches[k] = arr
-
+			recs = await sor.sqlExe(sql_all, {})
+			for r in recs:
+				if r.id == 'anonymous':
+					k = 'anonymous'
+				elif r.id == 'any':
+					k = 'any'
+				elif r.id == 'logined':
+					k = 'logined'
+				else:
+					k = f'{r.orgtypeid}.{r.name}'
+				arr = self.rp_caches.get(k, [])
+				arr.append(r.path)
+				self.rp_caches[k] = arr
+			self.rp_cache_loaded_at = now
+	
 	async def get_userroles(self, sor, userid):
+		"""Load user roles from database and cache them."""
 		recs = await sor.sqlExe('''select b.id, b.orgtypeid, b.name 
 from users a, role b, userrole c
 where a.id = c.userid
@@ -55,9 +143,10 @@ where a.id = c.userid
 			roles.append(f'{r.orgtypeid}.{r.name}')
 			roles.append(f'{r.orgtypeid}.*')
 			roles.append(f'*.{r.name}')
-		self.ur_caches[userid] = sorted(list(set(roles)))
-
+		self.ur_caches.set(userid, sorted(list(set(roles))))
+	
 	def check_roles_path(self, roles, path):
+		"""Check if any of the roles has access to the given path."""
 		ret = False
 		for role in roles:
 			paths = self.rp_caches.get(role)
@@ -65,22 +154,27 @@ where a.id = c.userid
 				continue
 			if path in paths:
 				return True
-		return False
-
+		return ret
+	
 	async def is_user_has_path_perm(self, userid, path):
+		"""Check if a user has permission for the given path.
+		
+		Security improvements:
+		1. rp_caches now has TTL to ensure permission changes take effect
+		2. User role cache uses LRU+TTL to prevent unbounded growth
+		3. Race condition protection with lock during rp_caches initialization
+		"""
 		roles = self.ur_caches.get(userid)
 		if userid is None:
 			roles = ['any', 'anonymous']
-
+		
 		if self.rp_caches is None or not roles:
 			env = ServerEnv()
 			async with get_sor_context(env, 'rbac') as sor:
-				if not self.rp_caches:
+				if self.rp_caches is None:
 					await self.load_roleperms(sor)
 				if not roles:
 					await self.get_userroles(sor, userid)
 					roles = self.ur_caches.get(userid)
-
+		
 		return self.check_roles_path(roles, path)
-	
-

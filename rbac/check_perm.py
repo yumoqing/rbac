@@ -88,6 +88,9 @@ async def register_user(sor, ns):
 	id = getID()
 	ns.id = id
 	ns.orgid = id
+	# Set registration timestamp
+	ns.created_at = curDateString('%Y-%m-%d %H:%M:%S')
+	ns.login_fail_count = 0
 	ns1 = DictObject(id=id, orgname=ns.username)
 	await create_org(sor, ns1)
 	await create_user(sor, ns)
@@ -105,18 +108,79 @@ def get_dbname():
 	return f('rbac')
 
 async def checkUserPassword(request, username, password):
+	"""Authenticate user with password, supporting login lockout mechanism.
+	
+	After 3 consecutive failed login attempts, the user is locked out for 5 minutes.
+	On successful login, last_login is updated and fail count is reset.
+	"""
 	db = DBPools()
 	dbname = get_dbname()
 	async with db.sqlorContext(dbname) as sor:
-		sql = "select * from users where username=${username}$ and password=${password}$"
-		recs = await sor.sqlExe(sql, {'username':username, 'password':password})
+		# Get user record including login status fields
+		sql = "select * from users where username=${username}$"
+		recs = await sor.sqlExe(sql, {'username': username})
 		if len(recs) < 1:
 			return False
-		await user_login(request, recs[0].id, 
-							username=recs[0].username, 
-							userorgid=recs[0].orgid)
+		
+		user = recs[0]
+		
+		# Check login lockout: 3 consecutive failures within 5 minutes
+		fail_count = getattr(user, 'login_fail_count', 0) or 0
+		last_fail = getattr(user, 'last_login_fail', None)
+		
+		if fail_count >= 3 and last_fail:
+			# Calculate time elapsed since last failed attempt
+			now_ts = time.time()
+			fail_ts = _parse_timestamp(last_fail)
+			elapsed = now_ts - fail_ts
+			if elapsed < 300:  # 5 minutes = 300 seconds
+				remaining = int(300 - elapsed)
+				debug(f'User {username} locked out, {remaining}s remaining')
+				return False
+			else:
+				# Lockout period expired, reset fail count
+				await sor.U('users', {'id': user.id}, {
+					'login_fail_count': 0,
+					'last_login_fail': None
+				})
+		
+		# Check password
+		sql = "select * from users where username=${username}$ and password=${password}$"
+		recs = await sor.sqlExe(sql, {'username': username, 'password': password})
+		if len(recs) < 1:
+			# Password wrong - increment fail count
+			new_fail_count = fail_count + 1
+			await sor.U('users', {'id': user.id}, {
+				'login_fail_count': new_fail_count,
+				'last_login_fail': curDateString('%Y-%m-%d %H:%M:%S')
+			})
+			debug(f'Login failed for {username}, fail_count={new_fail_count}')
+			return False
+		
+		# Login successful - reset fail count, update last_login
+		await sor.U('users', {'id': user.id}, {
+			'login_fail_count': 0,
+			'last_login_fail': None,
+			'last_login': curDateString('%Y-%m-%d %H:%M:%S')
+		})
+		await user_login(request, user.id, 
+							username=user.username, 
+							userorgid=user.orgid)
 		return True
 	return False
+
+def _parse_timestamp(ts):
+	"""Parse a timestamp string to unix timestamp."""
+	from datetime import datetime
+	if ts is None:
+		return 0
+	if isinstance(ts, (int, float)):
+		return ts
+	try:
+		dt = datetime.strptime(str(ts), '%Y-%m-%d %H:%M:%S')
+		return dt.timestamp()
+	except (ValueError, TypeError):
+		return 0
 
 async def basic_auth(sor, request):
 	auth = request.headers.get('Authorization')
@@ -128,6 +192,12 @@ async def basic_auth(sor, request):
 	recs = await sor.sqlExe(sql, {'username':username,'password':password})
 	if len(recs) < 1:
 		return None
+	# Update last_login on successful basic auth
+	await sor.U('users', {'id': recs[0].id}, {
+		'last_login': curDateString('%Y-%m-%d %H:%M:%S'),
+		'login_fail_count': 0,
+		'last_login_fail': None
+	})
 	await user_login(request, recs[0].id, 
 							username=recs[0].username, 
 							userorgid=recs[0].orgid)

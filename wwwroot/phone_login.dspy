@@ -43,6 +43,12 @@ async with get_sor_context(request._run_ns, 'rbac') as sor:
 	if recs:
 		if len(recs) == 1:
 			r = recs[0]
+			# Update last_login
+			await sor.U('users', {'id': r.id}, {
+				'last_login': curDateString('%Y-%m-%d %H:%M:%S'),
+				'login_fail_count': 0,
+				'last_login_fail': None
+			})
 			await remember_user(r.id, username=r.username, userorgid=r.orgid)
 			return {
 				"status": "ok",
@@ -53,6 +59,12 @@ async with get_sor_context(request._run_ns, 'rbac') as sor:
 		if params_kw.selected_id:
 			for r in recs:
 				if r.id == params_kw.selected_id:
+					# Update last_login
+					await sor.U('users', {'id': r.id}, {
+						'last_login': curDateString('%Y-%m-%d %H:%M:%S'),
+						'login_fail_count': 0,
+						'last_login_fail': None
+					})
 					await remember_user(r.id, username=r.username, userorgid=r.orgid)
 					return {
 						"status": "ok",

@@ -9,7 +9,7 @@ info(f'{ns=}')
 db = DBPools()
 dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
-	r = await sor.sqlExe('select * from users where username=${username}$ and password=${password}$', ns.copy())
+	r = await sor.sqlExe('select * from users where username=${username}$', ns.copy())
 	if len(r) == 0:
 		return {
 			"widgettype":"Error",
@@ -19,6 +19,47 @@ async with db.sqlorContext(dbname) as sor:
 				"message":"user name or password error"
 			}
 		}
+	user = r[0]
+	
+	# Check login lockout
+	fail_count = getattr(user, 'login_fail_count', 0) or 0
+	last_fail = getattr(user, 'last_login_fail', None)
+	if fail_count >= 3 and last_fail:
+		return {
+			"widgettype":"Error",
+			"options":{
+				"timeout":5,
+				"title":"Account Locked",
+				"message":"Account locked due to too many failed login attempts. Please try again in 5 minutes."
+			}
+		}
+	
+	r = await sor.sqlExe('select * from users where username=${username}$ and password=${password}$', ns.copy())
+	if len(r) == 0:
+		# Increment fail count
+		new_fail_count = fail_count + 1
+		await sor.U('users', {'id': user.id}, {
+			'login_fail_count': new_fail_count,
+			'last_login_fail': curDateString('%Y-%m-%d %H:%M:%S')
+		})
+		if new_fail_count >= 3:
+			msg = "Too many failed attempts. Account locked for 5 minutes."
+		else:
+			msg = f"user name or password error ({3 - new_fail_count} attempts remaining)"
+		return {
+			"widgettype":"Error",
+			"options":{
+				"timeout":3,
+				"title":"Login Error",
+				"message": msg
+			}
+		}
+	# Success - reset fail count, update last_login
+	await sor.U('users', {'id': user.id}, {
+		'login_fail_count': 0,
+		'last_login_fail': None,
+		'last_login': curDateString('%Y-%m-%d %H:%M:%S')
+	})
 	await remember_user(r[0].id, username=r[0].username, userorgid=r[0].orgid)
 	return {
 		"widgettype":"Message",
@@ -55,4 +96,3 @@ return {
 		"message":"system error"
 	}
 }
-	
