@@ -89,7 +89,7 @@ try:
 
 		d = await register_user(sor, udata)
 		if d['status'] == 'error':
-			debug(f'here')
+			debug(f'here, {d}')
 			return d
 		try:
 			ownerid = await get_owner_orgid(sor, orgid)
