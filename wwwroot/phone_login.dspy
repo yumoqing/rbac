@@ -53,6 +53,7 @@ try:
 					WHERE id = ${id}$
 				""", {'id': r.id, 'now': now_str})
 				await remember_user(r.id, username=r.username, userorgid=r.orgid)
+				debug(f'here')
 				return {
 					"status": "ok",
 					"data":{
@@ -70,6 +71,7 @@ try:
 							WHERE id = ${id}$
 						""", {'id': r.id, 'now': now_str})
 						await remember_user(r.id, username=r.username, userorgid=r.orgid)
+						debug(f'here')
 						return {
 							"status": "ok",
 							"data":{
@@ -77,6 +79,7 @@ try:
 							}
 						}
 			else:
+				debug(f'here')
 				return {
 					"status": "choose",
 					"data": {
@@ -86,6 +89,7 @@ try:
 
 		d = await register_user(sor, udata)
 		if d['status'] == 'error':
+			debug(f'here')
 			return d
 		try:
 			ownerid = await get_owner_orgid(sor, orgid)
@@ -95,6 +99,7 @@ try:
 		
 		r = d['data']['user']
 		await remember_user(r.id, username=r.username, userorgid=r.orgid)
+		debug(f'here')
 		return {
 			"status": "ok",
 			"data":{
