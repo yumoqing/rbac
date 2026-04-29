@@ -172,15 +172,38 @@ where a.id = c.userid
 		self.ur_caches.set(userid, sorted(list(set(roles))))
 	
 	def check_roles_path(self, roles, path):
-		"""Check if any of the roles has access to the given path."""
-		ret = False
+		"""Check if any of the roles has access to the given path.
+		
+		Supports:
+		- Exact match: '/customer_management/index.ui' or '/main/login.ui'
+		- Wildcard prefix match: '/customer_management/**' matches any path starting with '/customer_management/'
+		- Path normalization: tries both the raw path and path with /main stripped
+		"""
 		for role in roles:
 			paths = self.rp_caches.get(role)
 			if not paths:
 				continue
+			# Try exact match with raw path
 			if path in paths:
 				return True
-		return ret
+			# Try with /main prefix stripped: /main/xxx -> /xxx
+			if path.startswith('/main/'):
+				normalized = '/' + path[6:]
+				if normalized in paths:
+					return True
+				# Also try wildcard match with normalized path
+				for perm_path in paths:
+					if perm_path.endswith('**'):
+						prefix = perm_path[:-2]
+						if normalized.startswith(prefix) or path.startswith(prefix):
+							return True
+			# Wildcard prefix match with raw path
+			for perm_path in paths:
+				if perm_path.endswith('**'):
+					prefix = perm_path[:-2]
+					if path.startswith(prefix):
+						return True
+		return False
 	
 	async def is_user_has_path_perm(self, userid, path):
 		"""Check if a user has permission for the given path.
