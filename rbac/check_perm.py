@@ -222,6 +222,13 @@ async def basic_auth(sor, request):
 	return recs[0].id
 	
 async def getAuthenticationUserid(sor, request):
+	# 先检查 x-api-key header (Anthropic 标准认证)
+	x_api_key = request.headers.get('x-api-key')
+	if x_api_key:
+		x_api_key_handler = get_serverenv('x_api_key_auth')
+		if x_api_key_handler:
+			return await x_api_key_handler(sor, request)
+	
 	auth = request.headers.get('Authorization')
 	if auth is None:
 		return None
