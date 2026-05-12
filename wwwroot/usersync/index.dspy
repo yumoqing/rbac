@@ -40,14 +40,11 @@ if not dappid:
     }, ensure_ascii=False)
 
 # 获取数据库连接
-env = ServerEnv()
-dbname = env.get_module_dbname('dapi')
-config = getConfig()
+dbname = get_module_dbname('dapi')
 db = DBPools()
-db.databases = config.databases
 
 # 检查dapi模块是否提供了create_user_apikey函数
-create_apikey_func = getattr(env, 'create_user_apikey', None)
+create_apikey_func = create_user_apikey
 
 async with db.sqlorContext(dbname) as sor:
     if action == 'single':
@@ -108,7 +105,7 @@ async with db.sqlorContext(dbname) as sor:
             'apikey': password_encode(apikey_value),
             'enabled': '1',
             'created_at': datetime.now().strftime('%Y-%m-%d'),
-            'expires_at': '9999-12-31'
+            'expired_date': '9999-12-31'
         }
         
         await sor.C('downapikey', ns)
@@ -194,7 +191,7 @@ async with db.sqlorContext(dbname) as sor:
                         'apikey': password_encode(apikey_value),
                         'enabled': '1',
                         'created_at': datetime.now().strftime('%Y-%m-%d'),
-                        'expires_at': '9999-12-31'
+                        'expired_date': '9999-12-31'
                     }
                     
                     await sor.C('downapikey', ns)
