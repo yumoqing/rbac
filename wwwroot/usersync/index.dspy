@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""用户同步接口 - 检查用户是否存在，不存在则参照 register.dspy 逻辑创建用户和机构"""
+"""用户同步接口 - 检查用户/机构是否存在，不存在则注册并开帐，然后创建/获取apikey"""
 from datetime import datetime
 from appPublic.dictObject import DictObject
 
@@ -22,19 +22,20 @@ async with db.sqlorContext(dbname) as sor:
 		if not user_id or not user_orgid:
 			return json.dumps({'status': 'error', 'message': 'user.id和user.orgid必填'}, ensure_ascii=False)
 		
-		# 1. 检查用户是否存在
+		# 1. 检查用户
 		users = await sor.R('users', {'id': user_id})
 		
 		if not users:
-			# 用户不存在，执行注册逻辑
-			# 确保机构存在
+			debug(f"User {user_id} not found, registering...")
+			
+			# 1.1 确保机构存在
 			orgs = await sor.R('organization', {'id': user_orgid})
 			if not orgs:
 				org_name = user_data.get('name', user_data.get('username', user_id))
 				await create_org(sor, DictObject(id=user_orgid, orgname=org_name))
 				debug(f"Created org: {user_orgid}")
 			
-			# 创建用户
+			# 1.2 创建用户
 			pwd = user_data.get('password', '111111')
 			ns = DictObject(
 				id=user_id,
@@ -48,27 +49,40 @@ async with db.sqlorContext(dbname) as sor:
 			)
 			await create_user(sor, ns)
 			debug(f"Created user: {user_id}")
+			
+			# 1.3 开帐
+			try:
+				await openCustomerAccounts(sor, '0', user_orgid)
+				debug(f"Opened accounts for {user_orgid}")
+			except Exception as e:
+				exception(f"Failed to open accounts: {e}")
 		
 		# 2. 处理 Apikey
-		if create_user_apikey:
-			result = await create_user_apikey(sor, dappid, user_id, user_orgid, **{k: v for k, v in user_data.items() if k not in ['id', 'orgid']})
-			return json.dumps(result, ensure_ascii=False)
+		existing = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
 		
-		existing_key = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
-		if existing_key:
-			f = get_serverenv('password_decode')
-			apikey = f(existing_key[0].apikey)
-			return json.dumps({'status': 'success', 'data': [{'user_id': user_id, 'apikey': apikey, 'status': 'existing'}]}, ensure_ascii=False)
+		if existing:
+			apikey = password_decode(existing[0].apikey)
+			msg = '用户已同步，获取现有apikey'
+		else:
+			apikey_value = getID()
+			ns_key = {
+				'id': getID(), 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
+				'orgid': user_orgid, 'userid': user_id, 'apikey': password_encode(apikey_value),
+				'enabled': '1', 'created_at': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
+			}
+			await sor.C('downapikey', ns_key)
+			apikey = apikey_value
+			msg = '用户同步成功，apikey已创建'
 		
-		apikey_value = getID()
-		ns_key = {
-			'id': getID(), 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
-			'orgid': user_orgid, 'userid': user_id, 'apikey': password_encode(apikey_value),
-			'enabled': '1', 'created_at': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
-		}
-		await sor.C('downapikey', ns_key)
-		return json.dumps({'status': 'success', 'data': [{'user_id': user_id, 'apikey': apikey_value, 'status': 'created'}]}, ensure_ascii=False)
-	
+		return json.dumps({
+			'status': 'success',
+			'data': [{
+				'user_id': user_id,
+				'apikey': apikey,
+				'status': msg
+			}]
+		}, ensure_ascii=False)
+
 	elif action == 'batch':
 		users_list = params_kw.get('users', [])
 		if not users_list:
@@ -99,26 +113,33 @@ async with db.sqlorContext(dbname) as sor:
 					password=password_encode(pwd), created_at=timestampstr(), login_fail_count=0
 				)
 				await create_user(sor, ns)
-				debug(f"Batch created user: {user_id}")
+				
+				# 开帐
+				try:
+					await openCustomerAccounts(sor, '0', user_orgid)
+				except Exception as e:
+					exception(f"Failed to open accounts: {e}")
 			
 			# 2. 处理 Apikey
-			if create_user_apikey:
-				result = await create_user_apikey(sor, dappid, user_id, user_orgid, **{k: v for k, v in user_data.items() if k not in ['id', 'orgid']})
-				result_data.append({'user_id': user_id, 'apikey': result.get('apikey', ''), 'status': result.get('status')})
+			existing = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
+			if existing:
+				apikey = password_decode(existing[0].apikey)
+				status_msg = '用户已同步'
 			else:
-				existing_key = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
-				if existing_key:
-					f = get_serverenv('password_decode')
-					apikey = f(existing_key[0].apikey)
-					result_data.append({'user_id': user_id, 'apikey': apikey, 'status': 'existing'})
-				else:
-					apikey_value = getID()
-					ns_key = {
-						'id': getID(), 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
-						'orgid': user_orgid, 'userid': user_id, 'apikey': password_encode(apikey_value),
-						'enabled': '1', 'created_at': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
-					}
-					await sor.C('downapikey', ns_key)
-					result_data.append({'user_id': user_id, 'apikey': apikey_value, 'status': 'created'})
+				apikey_value = getID()
+				ns_key = {
+					'id': getID(), 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
+					'orgid': user_orgid, 'userid': user_id, 'apikey': password_encode(apikey_value),
+					'enabled': '1', 'created_at': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
+				}
+				await sor.C('downapikey', ns_key)
+				apikey = apikey_value
+				status_msg = '同步成功'
+			
+			result_data.append({
+				'user_id': user_id,
+				'apikey': apikey,
+				'status': status_msg
+			})
 		
 		return json.dumps({'status': 'success', 'data': result_data}, ensure_ascii=False)
