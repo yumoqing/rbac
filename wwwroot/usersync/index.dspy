@@ -1,25 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""用户同步接口 - POST方式同步单个或批量用户到dapi模块并返回apikey"""
+"""用户同步接口 - 检查用户是否存在，不存在则参照 register.dspy 逻辑创建用户和机构"""
 from datetime import datetime
+from appPublic.dictObject import DictObject
 
-# 获取参数
 action = params_kw.get('action', 'batch')
 dappid = params_kw.get('dappid', '')
 
-# 参数验证
 if not dappid:
-	return json.dumps({
-		'status': 'error',
-		'message': 'dappid参数必填'
-	}, ensure_ascii=False)
+	return json.dumps({'status': 'error', 'message': 'dappid参数必填'}, ensure_ascii=False)
 
-# 获取数据库连接
 dbname = get_module_dbname('dapi')
 db = DBPools()
-
-# 检查dapi模块是否提供了create_user_apikey函数
-create_apikey_func = create_user_apikey
 
 async with db.sqlorContext(dbname) as sor:
 	if action == 'single':
@@ -28,58 +20,59 @@ async with db.sqlorContext(dbname) as sor:
 		user_orgid = user_data.get('orgid', '')
 		
 		if not user_id or not user_orgid:
-			return json.dumps({
-				'status': 'error',
-				'message': 'user.id和user.orgid参数必填'
-			}, ensure_ascii=False)
+			return json.dumps({'status': 'error', 'message': 'user.id和user.orgid必填'}, ensure_ascii=False)
 		
-		# 确保机构存在
-		org = await sor.R('organization', {'id': user_orgid})
-		if not org:
-			await sor.C('organization', {'id': user_orgid, 'orgname': user_data.get('name', user_data.get('username', user_id))})
-			await sor.C('orgtypes', {'id': getID(), 'orgid': user_orgid, 'orgtypeid': 'customer'})
+		# 1. 检查用户是否存在
+		users = await sor.R('users', {'id': user_id})
 		
-		# 确保用户存在
-		usr = await sor.R('users', {'id': user_id})
-		if not usr:
-			await sor.C('users', {
-				'id': user_id,
-				'orgid': user_orgid,
-				'username': user_data.get('username', user_id),
-				'name': user_data.get('name', ''),
-				'email': user_data.get('email', ''),
-				'password': password_encode(user_data.get('password', '111111'))
-			})
-		
-		# 创建apikey
-		if create_apikey_func:
-			result = await create_apikey_func(
-				sor, dappid, user_id, user_orgid,
-				**{k: v for k, v in user_data.items() if k not in ['id', 'orgid']}
+		if not users:
+			# 用户不存在，执行注册逻辑
+			# 确保机构存在
+			orgs = await sor.R('organization', {'id': user_orgid})
+			if not orgs:
+				org_name = user_data.get('name', user_data.get('username', user_id))
+				await create_org(sor, DictObject(id=user_orgid, orgname=org_name))
+				debug(f"Created org: {user_orgid}")
+			
+			# 创建用户
+			pwd = user_data.get('password', '111111')
+			ns = DictObject(
+				id=user_id,
+				orgid=user_orgid,
+				username=user_data.get('username', user_id),
+				name=user_data.get('name', ''),
+				email=user_data.get('email', ''),
+				password=password_encode(pwd),
+				created_at=timestampstr(),
+				login_fail_count=0
 			)
+			await create_user(sor, ns)
+			debug(f"Created user: {user_id}")
+		
+		# 2. 处理 Apikey
+		if create_user_apikey:
+			result = await create_user_apikey(sor, dappid, user_id, user_orgid, **{k: v for k, v in user_data.items() if k not in ['id', 'orgid']})
 			return json.dumps(result, ensure_ascii=False)
 		
-		# 手动创建apikey
-		existing = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
-		if existing:
+		existing_key = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
+		if existing_key:
 			f = get_serverenv('password_decode')
-			apikey = f(existing[0].apikey)
+			apikey = f(existing_key[0].apikey)
 			return json.dumps({'status': 'success', 'data': [{'user_id': user_id, 'apikey': apikey, 'status': 'existing'}]}, ensure_ascii=False)
 		
-		apikey_id = getID()
 		apikey_value = getID()
-		ns = {
-			'id': apikey_id, 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
+		ns_key = {
+			'id': getID(), 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
 			'orgid': user_orgid, 'userid': user_id, 'apikey': password_encode(apikey_value),
 			'enabled': '1', 'created_at': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
 		}
-		await sor.C('downapikey', ns)
+		await sor.C('downapikey', ns_key)
 		return json.dumps({'status': 'success', 'data': [{'user_id': user_id, 'apikey': apikey_value, 'status': 'created'}]}, ensure_ascii=False)
 	
 	elif action == 'batch':
 		users_list = params_kw.get('users', [])
 		if not users_list:
-			return json.dumps({'status': 'error', 'message': 'users参数必填（用户对象数组）'}, ensure_ascii=False)
+			return json.dumps({'status': 'error', 'message': 'users必填'}, ensure_ascii=False)
 		
 		result_data = []
 		for user_data in users_list:
@@ -87,53 +80,45 @@ async with db.sqlorContext(dbname) as sor:
 			user_orgid = user_data.get('orgid', '')
 			
 			if not user_id or not user_orgid:
-				result_data.append({'user_id': user_id, 'status': 'error', 'message': 'user.id和user.orgid必填'})
+				result_data.append({'user_id': user_id, 'status': 'error', 'message': 'id/orgid必填'})
 				continue
 			
-			# 确保机构存在
-			org = await sor.R('organization', {'id': user_orgid})
-			if not org:
-				await sor.C('organization', {'id': user_orgid, 'orgname': user_data.get('name', user_data.get('username', user_id))})
-				await sor.C('orgtypes', {'id': getID(), 'orgid': user_orgid, 'orgtypeid': 'customer'})
-			
-			# 确保用户存在
-			usr = await sor.R('users', {'id': user_id})
-			if not usr:
-				await sor.C('users', {
-					'id': user_id, 'orgid': user_orgid,
-					'username': user_data.get('username', user_id), 'name': user_data.get('name', ''),
-					'email': user_data.get('email', ''), 'password': password_encode(user_data.get('password', '111111'))
-				})
-			
-			# 创建apikey
-			if create_apikey_func:
-				result = await create_apikey_func(
-					sor, dappid, user_id, user_orgid,
-					**{k: v for k, v in user_data.items() if k not in ['id', 'orgid']}
+			# 1. 检查/创建用户
+			users = await sor.R('users', {'id': user_id})
+			if not users:
+				orgs = await sor.R('organization', {'id': user_orgid})
+				if not orgs:
+					org_name = user_data.get('name', user_data.get('username', user_id))
+					await create_org(sor, DictObject(id=user_orgid, orgname=org_name))
+				
+				pwd = user_data.get('password', '111111')
+				ns = DictObject(
+					id=user_id, orgid=user_orgid,
+					username=user_data.get('username', user_id),
+					name=user_data.get('name', ''), email=user_data.get('email', ''),
+					password=password_encode(pwd), created_at=timestampstr(), login_fail_count=0
 				)
-				result_data.append({
-					'user_id': user_id, 'username': user_data.get('username', ''),
-					'apikey': result.get('apikey', ''), 'status': result.get('message', 'created'),
-					'result_status': result.get('status')
-				})
+				await create_user(sor, ns)
+				debug(f"Batch created user: {user_id}")
+			
+			# 2. 处理 Apikey
+			if create_user_apikey:
+				result = await create_user_apikey(sor, dappid, user_id, user_orgid, **{k: v for k, v in user_data.items() if k not in ['id', 'orgid']})
+				result_data.append({'user_id': user_id, 'apikey': result.get('apikey', ''), 'status': result.get('status')})
 			else:
-				existing = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
-				if existing:
+				existing_key = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
+				if existing_key:
 					f = get_serverenv('password_decode')
-					apikey = f(existing[0].apikey)
+					apikey = f(existing_key[0].apikey)
 					result_data.append({'user_id': user_id, 'apikey': apikey, 'status': 'existing'})
 				else:
-					apikey_id = getID()
 					apikey_value = getID()
-					ns = {
-						'id': apikey_id, 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
+					ns_key = {
+						'id': getID(), 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
 						'orgid': user_orgid, 'userid': user_id, 'apikey': password_encode(apikey_value),
 						'enabled': '1', 'created_at': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
 					}
-					await sor.C('downapikey', ns)
+					await sor.C('downapikey', ns_key)
 					result_data.append({'user_id': user_id, 'apikey': apikey_value, 'status': 'created'})
 		
-		return json.dumps({'status': 'success', 'data': result_data, 'total': len(result_data)}, ensure_ascii=False)
-	
-	else:
-		return json.dumps({'status': 'error', 'message': 'action参数必须是single或batch'}, ensure_ascii=False)
+		return json.dumps({'status': 'success', 'data': result_data}, ensure_ascii=False)
