@@ -71,27 +71,34 @@ async with db.sqlorContext(dbname) as sor:
             )
             return json.dumps(result, ensure_ascii=False)
         
-        # 否则自己创建apikey
-        # 检查apikey是否已存在
-        existing = await sor.R('downapikey', {
-            'dappid': dappid,
-            'duserid': user_id,
-            'dorgid': user_orgid
-        })
-        
-        if existing:
-            apikey = password_decode(existing[0].apikey)
-            return json.dumps({
-                'status': 'success',
-                'data': [{
-                    'user_id': user_id,
-                    'username': user_data.get('username', ''),
-                    'apikey': apikey,
-                    'status': 'existing'
-                }]
-            }, ensure_ascii=False)
-        
-        # 创建新apikey
+		# 否则自己创建apikey
+		# 检查apikey是否已存在
+		existing = await sor.R('downapikey', {
+			'dappid': dappid,
+			'duserid': user_id,
+			'dorgid': user_orgid
+		})
+		
+		if existing:
+			# 验证用户是否存在
+			user_check = await sor.R('users', {'id': existing[0].userid})
+			if not user_check:
+				# 脏数据：downapikey 存在但用户已删除，清理后重新创建
+				await sor.D('downapikey', {'id': existing[0].id})
+				existing = None
+			else:
+				apikey = password_decode(existing[0].apikey)
+				return json.dumps({
+					'status': 'success',
+					'data': [{
+						'user_id': user_id,
+						'username': user_data.get('username', ''),
+						'apikey': apikey,
+						'status': 'existing'
+					}]
+				}, ensure_ascii=False)
+		
+		# 创建新apikey
         apikey_id = getID()
         apikey_value = getID()
         
@@ -160,48 +167,56 @@ async with db.sqlorContext(dbname) as sor:
                     'status': result.get('message', 'created'),
                     'result_status': result.get('status')
                 })
-            else:
-                # 检查apikey是否已存在
-                existing = await sor.R('downapikey', {
-                    'dappid': dappid,
-                    'duserid': user_id,
-                    'dorgid': user_orgid
-                })
-                
-                if existing:
-                    apikey = password_decode(existing[0].apikey)
-                    result_data.append({
-                        'user_id': user_id,
-                        'username': user_data.get('username', ''),
-                        'apikey': apikey,
-                        'status': 'existing'
-                    })
-                else:
-                    # 创建新apikey
-                    apikey_id = getID()
-                    apikey_value = getID()
-                    
-                    ns = {
-                        'id': apikey_id,
-                        'dappid': dappid,
-                        'dorgid': user_orgid,
-                        'duserid': user_id,
-                        'orgid': user_orgid,
-                        'userid': user_id,
-                        'apikey': password_encode(apikey_value),
-                        'enabled': '1',
-                        'created_at': datetime.now().strftime('%Y-%m-%d'),
-                        'expired_date': '9999-12-31'
-                    }
-                    
-                    await sor.C('downapikey', ns)
-                    
-                    result_data.append({
-                        'user_id': user_id,
-                        'username': user_data.get('username', ''),
-                        'apikey': apikey_value,
-                        'status': 'created'
-                    })
+		else:
+			# 检查apikey是否已存在
+			existing = await sor.R('downapikey', {
+				'dappid': dappid,
+				'duserid': user_id,
+				'dorgid': user_orgid
+			})
+			
+			if existing:
+				# 验证用户是否存在
+				user_check = await sor.R('users', {'id': existing[0].userid})
+				if not user_check:
+					# 脏数据，清理后重新创建
+					await sor.D('downapikey', {'id': existing[0].id})
+					existing = None
+				else:
+					apikey = password_decode(existing[0].apikey)
+					result_data.append({
+						'user_id': user_id,
+						'username': user_data.get('username', ''),
+						'apikey': apikey,
+						'status': 'existing'
+					})
+					continue
+			else:
+				# 创建新apikey
+				apikey_id = getID()
+				apikey_value = getID()
+				
+				ns = {
+					'id': apikey_id,
+					'dappid': dappid,
+					'dorgid': user_orgid,
+					'duserid': user_id,
+					'orgid': user_orgid,
+					'userid': user_id,
+					'apikey': password_encode(apikey_value),
+					'enabled': '1',
+					'created_at': datetime.now().strftime('%Y-%m-%d'),
+					'expired_date': '9999-12-31'
+				}
+				
+				await sor.C('downapikey', ns)
+				
+				result_data.append({
+					'user_id': user_id,
+					'username': user_data.get('username', ''),
+					'apikey': apikey_value,
+					'status': 'created'
+				})
         
         return json.dumps({
             'status': 'success',
