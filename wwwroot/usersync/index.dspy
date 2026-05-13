@@ -57,24 +57,11 @@ async with db.sqlorContext(dbname) as sor:
 			except Exception as e:
 				exception(f"Failed to open accounts: {e}")
 		
-		# 2. 处理 Apikey — 先查 kwdownapikey 确认用户是否已有 apikey
-		kw_existing = await sor.R('kwdownapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
+		# 2. 处理 Apikey — 按用户级(dappid+duserid+dorgid)查询
+		existing = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
 		
-		if kw_existing:
-			# 用户已有 apikey，从 downapikey 获取
-			da_existing = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
-			if da_existing:
-				apikey = password_decode(da_existing[0].apikey)
-			else:
-				# kwdownapikey 有记录但 downapikey 没有（脏数据），重新创建
-				apikey_value = getID()
-				ns_key = {
-					'id': getID(), 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
-					'orgid': user_orgid, 'userid': user_id, 'apikey': password_encode(apikey_value),
-					'enabled': '1', 'created_at': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
-				}
-				await sor.C('downapikey', ns_key)
-				apikey = apikey_value
+		if existing:
+			apikey = password_decode(existing[0].apikey)
 			msg = '用户已同步，获取现有apikey'
 		else:
 			apikey_value = getID()
@@ -133,21 +120,10 @@ async with db.sqlorContext(dbname) as sor:
 				except Exception as e:
 					exception(f"Failed to open accounts: {e}")
 			
-			# 2. 处理 Apikey — 先查 kwdownapikey 确认用户是否已有 apikey
-			kw_existing = await sor.R('kwdownapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
-			if kw_existing:
-				da_existing = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
-				if da_existing:
-					apikey = password_decode(da_existing[0].apikey)
-				else:
-					apikey_value = getID()
-					ns_key = {
-						'id': getID(), 'dappid': dappid, 'dorgid': user_orgid, 'duserid': user_id,
-						'orgid': user_orgid, 'userid': user_id, 'apikey': password_encode(apikey_value),
-						'enabled': '1', 'created_at': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
-					}
-					await sor.C('downapikey', ns_key)
-					apikey = apikey_value
+			# 2. 处理 Apikey — 按用户级(dappid+duserid+dorgid)查询
+			existing = await sor.R('downapikey', {'dappid': dappid, 'duserid': user_id, 'dorgid': user_orgid})
+			if existing:
+				apikey = password_decode(existing[0].apikey)
 				status_msg = '用户已同步'
 			else:
 				apikey_value = getID()
