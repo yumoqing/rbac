@@ -64,9 +64,9 @@ async with db.sqlorContext(dbname) as sor:
 			apikey = password_decode(existing[0].apikey)
 			msg = '用户已同步，获取现有apikey'
 		else:
-			apikey_value = getID()
+			apikey_value = uuid()
 			ns_key = {
-				'id': getID(), 'dappid': dappid, 'userid': user_id,
+				'id': uuid(), 'dappid': dappid, 'userid': user_id,
 				'apikey': password_encode(apikey_value),
 				'enabled_date': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
 			}
@@ -126,9 +126,9 @@ async with db.sqlorContext(dbname) as sor:
 				apikey = password_decode(existing[0].apikey)
 				status_msg = '用户已同步'
 			else:
-				apikey_value = getID()
+				apikey_value = uuid()
 				ns_key = {
-					'id': getID(), 'dappid': dappid, 'userid': user_id,
+					'id': uuid(), 'dappid': dappid, 'userid': user_id,
 					'apikey': password_encode(apikey_value),
 					'enabled_date': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
 				}
