@@ -1,9 +1,9 @@
 import asyncio
 from collections import OrderedDict
-from sqlor.dbpools import DBPools, get_sor_context
+from sqlor.dbpools import get_sor_context
 from ahserver.serverenv import ServerEnv
 from appPublic.Singleton import SingletonDecorator
-from appPublic.log import debug, exception, error
+from appPublic.log import debug, error
 
 class LRUCache:
 	"""Async-safe LRU cache with TTL support.
@@ -80,7 +80,87 @@ class UserPermissions:
 		
 		# Async lock for rp_caches initialization (lazy init)
 		self._rp_lock = None
-	
+
+	def on_user_update(self, data):
+		"""Event handler for users table update.
+		Clears the specific user's permission cache.
+		"""
+		try:
+			userid = getattr(data, 'id', None)
+			if userid:
+				self.invalidate_user_cache(userid)
+				debug(f'RBAC cache invalidated for user id={userid} (users update)')
+		except Exception as e:
+			error(f'RBAC on_user_update handler error: {e}')
+
+	def on_user_create(self, data):
+		"""Event handler for users table insert.
+		Clears the specific user's permission cache.
+		"""
+		try:
+			userid = getattr(data, 'id', None)
+			if userid:
+				self.invalidate_user_cache(userid)
+				debug(f'RBAC cache invalidated for user id={userid} (users create)')
+		except Exception as e:
+			error(f'RBAC on_user_create handler error: {e}')
+
+	def on_user_delete(self, data):
+		"""Event handler for users table delete.
+		Clears the specific user's permission cache.
+		"""
+		try:
+			userid = getattr(data, 'id', None)
+			if userid:
+				self.invalidate_user_cache(userid)
+				debug(f'RBAC cache invalidated for user id={userid} (users delete)')
+		except Exception as e:
+			error(f'RBAC on_user_delete handler error: {e}')
+
+	def on_rolepermission_change(self, data):
+		"""Event handler for rolepermission table C/U/D.
+		Clears the role-permission cache.
+		"""
+		try:
+			self.invalidate_rp_cache()
+			debug('RBAC role-permission cache invalidated (rolepermission change)')
+		except Exception as e:
+			error(f'RBAC on_rolepermission_change handler error: {e}')
+
+	def on_permission_change(self, data):
+		"""Event handler for permission table update.
+		Clears the role-permission cache.
+		"""
+		try:
+			self.invalidate_rp_cache()
+			debug('RBAC role-permission cache invalidated (permission change)')
+		except Exception as e:
+			error(f'RBAC on_permission_change handler error: {e}')
+
+	def on_role_change(self, data):
+		"""Event handler for role table C/U/D.
+		Clears all user caches and role-permission cache,
+		since role changes may affect any user.
+		"""
+		try:
+			self.invalidate_all_user_caches()
+			self.invalidate_rp_cache()
+			debug('RBAC all caches invalidated (role change)')
+		except Exception as e:
+			error(f'RBAC on_role_change handler error: {e}')
+
+	def on_userrole_change(self, data):
+		"""Event handler for userrole table C/U/D.
+		Clears the specific user's permission cache based on userid.
+		"""
+		try:
+			userid = getattr(data, 'userid', None)
+			if userid:
+				self.invalidate_user_cache(userid)
+				debug(f'RBAC cache invalidated for user id={userid} (userrole change)')
+		except Exception as e:
+			error(f'RBAC on_userrole_change handler error: {e}')
+
 	def _get_rp_lock(self):
 		if self._rp_lock is None:
 			self._rp_lock = asyncio.Lock()
