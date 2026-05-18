@@ -14,6 +14,17 @@ dbname = get_module_dbname('dapi')
 db = DBPools()
 
 async with db.sqlorContext(dbname) as sor:
+	dapps = await sor.R('downapp', {'id': dappid})
+	if not dapps:
+		return {
+			"status": "error",
+			"data":{
+				"message": f"{dappid=} not found"
+			}
+		}
+	dapp = dapps[0]
+	secretkey = password_decode(dapp.secretkey)
+		
 	if action == 'single':
 		user_data = params_kw.get('user', {})
 		user_id = user_data.get('id', '')
@@ -61,6 +72,7 @@ async with db.sqlorContext(dbname) as sor:
 		existing = await sor.R('downapikey', {'dappid': dappid, 'userid': user_id})
 		
 		if existing:
+			secretkey = password_decode(dapp.secretkey)
 			apikey = password_decode(existing[0].apikey)
 			msg = '用户已同步，获取现有apikey'
 		else:
@@ -79,6 +91,8 @@ async with db.sqlorContext(dbname) as sor:
 			'data': [{
 				'user_id': user_id,
 				'apikey': apikey,
+				'appid': dappid,
+				'secretkey': secretkey,
 				'status': msg
 			}]
 		}, ensure_ascii=False)
@@ -130,6 +144,8 @@ async with db.sqlorContext(dbname) as sor:
 				ns_key = {
 					'id': uuid(), 'dappid': dappid, 'userid': user_id,
 					'apikey': password_encode(apikey_value),
+					'secretkey': secretkey,
+					'appid': dappid,
 					'enabled_date': datetime.now().strftime('%Y-%m-%d'), 'expired_date': '9999-12-31'
 				}
 				await sor.C('downapikey', ns_key)
