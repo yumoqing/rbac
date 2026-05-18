@@ -1,49 +1,49 @@
 {
-	"widgettype":"PopupWindow",
-	"options":{
-		"cwidth":22,
-		"height":"75%",
-		"archor":"cc",
-		"auto_open":true
-	},
-	"subwidgets":[
-		{
-			"widgettype":"Form",
-			"options":{
-				"title":"Reset Password",
-				"description":"reset yourself password",
-				"fields":[
-					{
-						"name": "password",
-						"type": "str",
-						"length": 255,
-						"uitype": "password",
-						"datatype": "str",
-						"required":true,
-						"label": "\u5bc6\u7801"
-					},
-					{
-						"name": "cfm_password",
-						"type": "str",
-						"length": 255,
-						"uitype": "password",
-						"datatype": "str",
-						"required":true,
-						"label": "\u5bc6\u7801"
-					}
-				]
-			},
-			"binds":[
-				{
-					"wid":"self",
-					"event":"submit",
-					"actiontype":"urlwidget",
-					"target":"self",
-					"options":{
-						"url":"{{entire_url('reset_password.dspy')}}"
-					}
-				}
-			]
-		}
-	]
+    "widgettype": "PopupWindow",
+    "options": {
+        "cwidth": 22,
+        "height": "75%",
+        "archor": "cc",
+        "auto_open": true
+    },
+    "subwidgets": [
+        {
+            "widgettype": "Form",
+            "options": {
+                "title": "Reset Password",
+                "description": "reset yourself password",
+                "fields": [
+                    {
+                        "name": "password",
+                        "type": "str",
+                        "length": 255,
+                        "uitype": "password",
+                        "datatype": "str",
+                        "required": true,
+                        "label": "密码"
+                    },
+                    {
+                        "name": "cfm_password",
+                        "type": "str",
+                        "length": 255,
+                        "uitype": "password",
+                        "datatype": "str",
+                        "required": true,
+                        "label": "密码"
+                    }
+                ]
+            },
+            "binds": [
+                {
+                    "wid": "self",
+                    "event": "submit",
+                    "actiontype": "urlwidget",
+                    "target": "self",
+                    "options": {
+                        "url": "{{entire_url('reset_password.dspy')}}"
+                    }
+                }
+            ]
+        }
+    ]
 }

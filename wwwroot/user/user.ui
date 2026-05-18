@@ -1,15 +1,15 @@
 {
-	"id":"user_container",
-	"widgettype":"VBox",
-	"options":{
-		"cwidth":6
-	},
-	"subwidgets":[
-		{
-			"widgettype":"urlwidget",
-			"options":{
-				"url":"{{entire_url('userinfo.ui')}}"
-			}
-		}
-	]
+    "id": "user_container",
+    "widgettype": "VBox",
+    "options": {
+        "cwidth": 6
+    },
+    "subwidgets": [
+        {
+            "widgettype": "urlwidget",
+            "options": {
+                "url": "{{entire_url('userinfo.ui')}}"
+            }
+        }
+    ]
 }

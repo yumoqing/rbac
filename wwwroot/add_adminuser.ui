@@ -1,36 +1,36 @@
 {
-	"widgettype":"ModalForm",
-	"options":{
-		"cwidth":20,
-		"cheight":30,
-		"title":"增加管理员",
-		"fields":[
-			{
-				"name":"username",
-				"label":"用户名",
-				"uitype":"str"
-			},
-			{
-				"name":"password",
-				"label":"密码",
-				"uitype":"password"
-			},
-			{
-				"name":"chkpassword",
-				"label":"确认密码",
-				"uitype":"password"
-			}
-		]
-	},
-	"binds":[
-		{
-			"wid":"self",
-			"event":"submit",
-			"actiontype":"urlwidget",
-			"target":"self",
-			"options":{
-				"url":"{{entire_url('./add_adminuser.dspy')}}"
-			}
-		}
-	]
+    "widgettype": "ModalForm",
+    "options": {
+        "cwidth": 20,
+        "cheight": 30,
+        "title": "增加管理员",
+        "fields": [
+            {
+                "name": "username",
+                "label": "用户名",
+                "uitype": "str"
+            },
+            {
+                "name": "password",
+                "label": "密码",
+                "uitype": "password"
+            },
+            {
+                "name": "chkpassword",
+                "label": "确认密码",
+                "uitype": "password"
+            }
+        ]
+    },
+    "binds": [
+        {
+            "wid": "self",
+            "event": "submit",
+            "actiontype": "urlwidget",
+            "target": "self",
+            "options": {
+                "url": "{{entire_url('./add_adminuser.dspy')}}"
+            }
+        }
+    ]
 }

@@ -1,112 +1,114 @@
 {
-	"id":"login_window",
-	"widgettype":"PopupWindow",
-	"options":{
-		"title": "登录/注册",
-		"auto_open":true,
-		"anthor":"cc",
-		"cwidth":22,
-		"cheight":19
-	},
-	"subwidgets":[
-{
-	"widgettype":"TabPanel",
-	"options":{
-		"tab_wide":"auto",
-		"height":"100%",
-		"width":"100%",
-		"tab_pos":"top",
-		"items":[
-			{
-				"name":"userpasswd",
-				"label":"用户密码",
-				"content":{
-					"widgettype":"Form",
-					"options":{
-						"cols":1,
-						"fields":[
-							{
-								"name":"username",
-								"label":"用户名",
-								"uitype":"str"
-							},
-							{
-								"name":"password",
-								"label":"密码",
-								"uitype":"password"
-							}
-						]
-					},
-					"binds":[
-						{
-							"wid":"self",
-							"event":"submit",
-							"actiontype":"urlwidget",
-							"target":"self",
-							"options":{
-								"method":"POST",
-								"url":"{{entire_url('up_login.dspy')}}"
-							}
-						}
-					]
-				}
-			},
-			{
-				"name":"checkcode",
-				"label":"手机验证码",
-				"content":{
-					"widgettype":"Form",
-					"options":{
-						"toolbar":{
-							"tools":[
-								{
-									"name":"gen_code",
-									"label":"发送验证码"
-								}
-							]
-						},
-						"description":"限中国国内手机",
-						"fields":[
-							{
-							"name":"cell_no",
-							"label":"手机号",
-							"uitype":"str"
-							},{
-								"name":"codeid",
-								"uitype":"hide",
-								"value":"{{uuid()}}"
-							},{
-								"name":"check_code",
-								"uitype":"str"
-							}
-						]
-					},
-					"binds":[
-						{
-							"wid":"self",
-							"event":"gen_code",
-							"actiontype":"urlwidget",
-							"datawidget":"self",
-							"datamethod":"getValue",
-							"target":"self",
-							"options":{
-								"url":"{{entire_url('../gen_sms_code.dspy')}}"
-							}
-						},
-						{
-							"wid":"self",
-							"event":"submit",
-							"actiontype":"urlwidget",
-							"target":"self",
-							"options":{
-								"url":"{{entire_url('code_login.dspy')}}"
-							}
-						}
-					]
-				}
-			}
-		]
-	}
-}
-	]
+    "id": "login_window",
+    "widgettype": "PopupWindow",
+    "options": {
+        "title": "登录/注册",
+        "auto_open": true,
+        "anthor": "cc",
+        "cwidth": 22,
+        "cheight": 19
+    },
+    "subwidgets": [
+        {
+            "widgettype": "TabPanel",
+            "options": {
+                "tab_wide": "auto",
+                "height": "100%",
+                "width": "100%",
+                "tab_pos": "top",
+                "items": [
+                    {
+                        "name": "userpasswd",
+                        "label": "用户密码",
+                        "content": {
+                            "widgettype": "Form",
+                            "options": {
+                                "cols": 1,
+                                "fields": [
+                                    {
+                                        "name": "username",
+                                        "label": "用户名",
+                                        "uitype": "str"
+                                    },
+                                    {
+                                        "name": "password",
+                                        "label": "密码",
+                                        "uitype": "password"
+                                    }
+                                ]
+                            },
+                            "binds": [
+                                {
+                                    "wid": "self",
+                                    "event": "submit",
+                                    "actiontype": "urlwidget",
+                                    "target": "self",
+                                    "options": {
+                                        "method": "POST",
+                                        "url": "{{entire_url('up_login.dspy')}}"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "checkcode",
+                        "label": "手机验证码",
+                        "content": {
+                            "widgettype": "Form",
+                            "options": {
+                                "toolbar": {
+                                    "tools": [
+                                        {
+                                            "name": "gen_code",
+                                            "label": "发送验证码"
+                                        }
+                                    ]
+                                },
+                                "description": "限中国国内手机",
+                                "fields": [
+                                    {
+                                        "name": "cell_no",
+                                        "label": "手机号",
+                                        "uitype": "str"
+                                    },
+                                    {
+                                        "name": "codeid",
+                                        "uitype": "hide",
+                                        "value": "{{uuid()}}"
+                                    },
+                                    {
+                                        "name": "check_code",
+                                        "uitype": "str"
+                                    }
+                                ]
+                            },
+                            "binds": [
+                                {
+                                    "wid": "self",
+                                    "event": "gen_code",
+                                    "actiontype": "urlwidget",
+                                    "datawidget": "self",
+                                    "datamethod": "getValue",
+                                    "target": "self",
+                                    "options": {
+                                        "url": "{{entire_url('../gen_sms_code.dspy')}}"
+                                    }
+                                },
+                                {
+                                    "wid": "self",
+                                    "event": "submit",
+                                    "actiontype": "urlwidget",
+                                    "target": "self",
+                                    "options": {
+                                        "url": "{{entire_url('code_login.dspy')}}"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 }
