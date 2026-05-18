@@ -14,7 +14,7 @@ dbname = get_module_dbname('dapi')
 db = DBPools()
 
 async with db.sqlorContext(dbname) as sor:
-	dapps = await sor.R('downapp', {'id', dappid})
+	dapps = await sor.R('downapp', {'id': dappid})
 	if not dapps:
 		return {
 			"status": "error",
