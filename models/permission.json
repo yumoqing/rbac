@@ -1,0 +1,86 @@
+{
+    "summary": [
+        {
+            "name": "permission",
+            "title": "权限",
+            "primary": [
+                "id"
+            ]
+        }
+    ],
+    "fields": [
+        {
+            "name": "id",
+            "title": "权限id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "name",
+            "title": "名称",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "description",
+            "title": "描述",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "parentid",
+            "title": "父权限id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "path",
+            "title": "路径",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "icon",
+            "title": "图标",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "permtype",
+            "title": "类型",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "need_audit",
+            "title": "是否审计",
+            "type": "str",
+            "length": 1
+        }
+    ],
+    "indexes": [
+        {
+            "name": "idx1",
+            "idxtype": "unique",
+            "idxfields": [
+                "path"
+            ]
+        }
+    ],
+    "codes": [
+        {
+            "field": "permtype",
+            "table": "appcodes_kv",
+            "valuefield": "k",
+            "textfield": "v",
+            "cond": "parentid='permtype'"
+        },
+        {
+            "field": "need_audit",
+            "table": "appcodes_kv",
+            "valuefield": "k",
+            "textfield": "v",
+            "cond": "parentid='yesno'"
+        }
+    ]
+}

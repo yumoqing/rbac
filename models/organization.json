@@ -1,0 +1,153 @@
+{
+    "summary": [
+        {
+            "name": "organization",
+            "title": "机构",
+            "primary": [
+                "id"
+            ]
+        }
+    ],
+    "fields": [
+        {
+            "name": "id",
+            "title": "机构编码",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "orgname",
+            "title": "机构名称",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "orgabbr",
+            "title": "机构简称",
+            "type": "str",
+            "length": 100
+        },
+        {
+            "name": "alias_name",
+            "title": "机构别名",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "contactor",
+            "title": "联系人",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "contactor_phone",
+            "title": "联系人电话",
+            "type": "str",
+            "length": 100
+        },
+        {
+            "name": "province_id",
+            "title": "所在省id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "city_id",
+            "title": "所在城市id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "distinct_id",
+            "title": "所在地区id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "emailaddress",
+            "title": "邮箱",
+            "type": "str",
+            "length": 256
+        },
+        {
+            "name": "address",
+            "title": "地址",
+            "type": "str",
+            "length": 400
+        },
+        {
+            "name": "main_business",
+            "title": "主营业务描述",
+            "type": "str",
+            "length": 1000
+        },
+        {
+            "name": "orgcode",
+            "title": "组织结构代码",
+            "type": "str",
+            "length": 100
+        },
+        {
+            "name": "license_img",
+            "title": "营业执照",
+            "type": "str",
+            "length": 400
+        },
+        {
+            "name": "id_img",
+            "title": "身份证",
+            "type": "str",
+            "length": 400
+        },
+        {
+            "name": "parentid",
+            "title": "父机构id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "org_type",
+            "title": "机构类型",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "sitename",
+            "title": "网站域名",
+            "type": "str",
+            "length": 300
+        }
+    ],
+    "indexes": [
+        {
+            "name": "idx1",
+            "idxtype": "unique",
+            "idxfields": [
+                "orgname"
+            ]
+        }
+    ],
+    "codes": [
+        {
+            "field": "province_id",
+            "table": "appcodes_kv",
+            "valuefield": "k",
+            "textfield": "v",
+            "cond": "parentid='chnaddr'"
+        },
+        {
+            "field": "city_id",
+            "table": "appcodes_kv",
+            "valuefield": "k",
+            "textfield": "v",
+            "cond": "parentid='city'"
+        },
+        {
+            "field": "distinct_id",
+            "table": "appcodes_kv",
+            "valuefield": "k",
+            "textfield": "v",
+            "cond": "parentid='distinct'"
+        }
+    ]
+}

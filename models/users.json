@@ -1,0 +1,122 @@
+{
+    "summary": [
+        {
+            "name": "users",
+            "title": "用户",
+            "primary": [
+                "id"
+            ]
+        }
+    ],
+    "fields": [
+        {
+            "name": "id",
+            "title": "用户id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "username",
+            "title": "用户名",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "password",
+            "title": "密码",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "email",
+            "title": "邮件地址",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "orgid",
+            "title": "所属机构",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "nick_name",
+            "title": "显示名",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "address",
+            "title": "地址",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "mobile",
+            "title": "手机",
+            "type": "str",
+            "length": 255
+        },
+        {
+            "name": "user_status",
+            "title": "用户状态",
+            "type": "str",
+            "length": 1,
+            "default": "0"
+        },
+        {
+            "name": "created_at",
+            "title": "注册日期",
+            "type": "timestamp"
+        },
+        {
+            "name": "last_login",
+            "title": "最后登录",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "name": "login_fail_count",
+            "title": "连续失败次数",
+            "type": "short",
+            "default": "0"
+        },
+        {
+            "name": "last_login_fail",
+            "title": "最后登录失败时间",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "indexes": [
+        {
+            "name": "idx1",
+            "idxtype": "index",
+            "idxfields": [
+                "orgid"
+            ]
+        },
+        {
+            "name": "idx2",
+            "idxtype": "unique",
+            "idxfields": [
+                "username"
+            ]
+        }
+    ],
+    "codes": [
+        {
+            "field": "user_status",
+            "table": "appcodes_kv",
+            "valuefield": "k",
+            "textfield": "v",
+            "cond": "parentid='user_status'"
+        },
+        {
+            "field": "orgid",
+            "table": "organization",
+            "valuefield": "id",
+            "textfield": "orgname"
+        }
+    ]
+}

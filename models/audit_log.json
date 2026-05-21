@@ -1,0 +1,83 @@
+{
+    "summary": [
+        {
+            "name": "audit_log",
+            "title": "审计日志",
+            "primary": [
+                "id"
+            ]
+        }
+    ],
+    "fields": [
+        {
+            "name": "id",
+            "title": "用户id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "permid",
+            "title": "权限id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "userid",
+            "title": "用户id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "params_kw",
+            "title": "调用参数",
+            "type": "text",
+            "length": 40000
+        },
+        {
+            "name": "exe_date",
+            "title": "调用日期",
+            "type": "date"
+        },
+        {
+            "name": "exe_timestamp",
+            "title": "调用时间戳",
+            "type": "timestamp"
+        },
+        {
+            "name": "remote_ip",
+            "title": "远程IP",
+            "type": "str",
+            "length": 40
+        }
+    ],
+    "indexes": [
+        {
+            "name": "idx1",
+            "idxtype": "index",
+            "idxfields": [
+                "permid"
+            ]
+        },
+        {
+            "name": "idx2",
+            "idxtype": "index",
+            "idxfields": [
+                "userid"
+            ]
+        }
+    ],
+    "codes": [
+        {
+            "field": "userid",
+            "table": "users",
+            "valuefield": "id",
+            "textfield": "username"
+        },
+        {
+            "field": "permid",
+            "table": "permission",
+            "valuefield": "id",
+            "textfield": "name"
+        }
+    ]
+}

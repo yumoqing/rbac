@@ -1,0 +1,45 @@
+{
+    "summary": [
+        {
+            "name": "userrole",
+            "title": "用户角色",
+            "primary": [
+                "id"
+            ]
+        }
+    ],
+    "fields": [
+        {
+            "name": "id",
+            "title": "用户id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "userid",
+            "title": "用户id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "roleid",
+            "title": "角色id",
+            "type": "str",
+            "length": 32
+        }
+    ],
+    "codes": [
+        {
+            "field": "userid",
+            "table": "users",
+            "valuefield": "id",
+            "textfield": "username"
+        },
+        {
+            "field": "roleid",
+            "table": "(select id, concat(orgtypeid, '.', name) as name from role) as a",
+            "valuefield": "id",
+            "textfield": "name"
+        }
+    ]
+}

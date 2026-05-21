@@ -1,0 +1,40 @@
+{
+    "summary": [
+        {
+            "name": "orgtypes",
+            "title": "机构拥有角色",
+            "primary": [
+                "id"
+            ]
+        }
+    ],
+    "fields": [
+        {
+            "name": "id",
+            "title": "id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "orgid",
+            "title": "机构id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "orgtypeid",
+            "title": "机构类型",
+            "type": "str",
+            "length": 32
+        }
+    ],
+    "codes": [
+        {
+            "field": "orgtypeid",
+            "table": "appcodes_kv",
+            "valuefield": "k",
+            "textfield": "v",
+            "cond": "parentid='org_type'"
+        }
+    ]
+}

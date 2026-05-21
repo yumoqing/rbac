@@ -1,0 +1,45 @@
+{
+    "summary": [
+        {
+            "name": "rolepermission",
+            "title": "角色权限表",
+            "primary": [
+                "id"
+            ]
+        }
+    ],
+    "fields": [
+        {
+            "name": "id",
+            "title": "id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "roleid",
+            "title": "角色id",
+            "type": "str",
+            "length": 32
+        },
+        {
+            "name": "permid",
+            "title": "权限id",
+            "type": "str",
+            "length": 32
+        }
+    ],
+    "codes": [
+        {
+            "field": "permid",
+            "table": "permission",
+            "valuefield": "id",
+            "textfield": "path"
+        },
+        {
+            "field": "roleid",
+            "table": "(select id, concat(orgtypeid, '.', name) as name from role) as a",
+            "valuefield": "id",
+            "textfield": "name"
+        }
+    ]
+}
