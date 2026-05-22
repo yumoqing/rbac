@@ -86,7 +86,14 @@
             "title": "最后登录失败时间",
             "type": "timestamp",
             "nullable": true
-        }
+        },
+        {
+            "name": "sync_from",
+            "title": "同步应用id",
+            "type": "str",
+			"length": 32,
+            "nullable": true
+        },
     ],
     "indexes": [
         {
@@ -112,6 +119,12 @@
             "textfield": "v",
             "cond": "parentid='user_status'"
         },
+		{
+			"field": "sync_from",
+			"table": "downapp",
+			"valuefield": "id",
+			"textfield": "name"
+		},
         {
             "field": "orgid",
             "table": "organization",
