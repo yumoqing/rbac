@@ -93,7 +93,7 @@
             "type": "str",
 			"length": 32,
             "nullable": true
-        },
+        }
     ],
     "indexes": [
         {
