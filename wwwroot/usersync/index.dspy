@@ -29,7 +29,6 @@ async with db.sqlorContext(dbname) as sor:
 		user_data = params_kw.get('user', {})
 		user_id = user_data.get('id', '')
 		user_orgid = user_data.get('orgid', '')
-		
 		if not user_id or not user_orgid:
 			return json.dumps({'status': 'error', 'message': 'user.id和user.orgid必填'}, ensure_ascii=False)
 		
@@ -56,6 +55,7 @@ async with db.sqlorContext(dbname) as sor:
 				email=user_data.get('email', ''),
 				password=password_encode(pwd),
 				created_at=timestampstr(),
+				sync_from=dappid,
 				login_fail_count=0
 			)
 			await create_user(sor, ns)
