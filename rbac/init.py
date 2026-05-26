@@ -6,19 +6,23 @@ from .orgs import (
 )
 from .userperm import UserPermissions
 from .user_stats import get_user_stats
+from .rbac_tools import (
+	query_path_roles,
+	scan_unauth_files
+)
 from rbac.check_perm import (
-	objcheckperm, 
+	objcheckperm,
 	get_org_users,
 	sor_get_org_users,
-	checkUserPassword, 
-	register_user, 
-	register_auth_method, 
-	create_org, 
+	checkUserPassword,
+	register_user,
+	register_auth_method,
+	create_org,
 	create_user
 )
 from rbac.set_role_perms import (
 	sor_add_user_roles,
-	set_role_perm, 
+	set_role_perm,
 	set_role_perms
 )
 from appPublic.log import debug
@@ -78,6 +82,8 @@ def load_rbac():
 	env.get_owner_orgid = get_owner_orgid
 	env.sor_add_user_roles = sor_add_user_roles
 	env.get_user_stats = get_user_stats
+	env.query_path_roles = query_path_roles
+	env.scan_unauth_files = scan_unauth_files
 	# Cache invalidation methods for use after role/permission changes
 	env.invalidate_user_perm_cache = env.userpermissions.invalidate_user_cache
 	env.invalidate_all_perm_caches = env.userpermissions.invalidate_all_user_caches
