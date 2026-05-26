@@ -1,7 +1,17 @@
 [
 	{
 		"name":"users",
-		"label":"用户管理"
+		"label":"用户管理",
 		"url":"{{entire_url('/rbac/users')}}"
+	},
+	{
+		"name":"list_path_roles",
+		"label":"查询路径权限角色",
+		"url":"{{entire_url('/rbac/list_path_roles.ui')}}"
+	},
+	{
+		"name":"find_unauth_files",
+		"label":"扫描未授权文件",
+		"url":"{{entire_url('/rbac/find_unauth_files.dspy')}}"
 	}
 ]

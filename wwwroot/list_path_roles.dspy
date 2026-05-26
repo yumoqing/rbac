@@ -1,0 +1,66 @@
+# 查询指定路径拥有权限的所有角色
+path = params_kw.get('path', '').strip()
+if not path:
+    return UiError(title='错误', message='请输入路径')
+if not path.startswith('/'):
+    path = '/' + path
+
+from appPublic.dictObject import DictObject
+
+async with get_sor_context(request._run_ns, 'rbac') as sor:
+    # 查找 permission 记录
+    perm_recs = await sor.sqlExe("SELECT id, path FROM permission WHERE path=${path}$", {'path': path})
+    if not perm_recs:
+        msg = f"路径 '{path}' 未在 permission 表中注册。"
+        # 尝试模糊匹配
+        like_path = path.rstrip('/') + '/%'
+        like_recs = await sor.sqlExe("SELECT path FROM permission WHERE path LIKE ${lp}$", {'lp': like_path})
+        if like_recs:
+            sub_paths = '<br>'.join([f'  {r.path}' for r in like_recs[:10]])
+            if len(like_recs) > 10:
+                sub_paths += f'<br>... 共 {len(like_recs)} 条'
+            msg += f'<br><br>模糊匹配到 {len(like_recs)} 个子路径：<br>{sub_paths}'
+        return UiError(title='未找到', message=msg)
+
+    perm = perm_recs[0]
+    permid = perm.id
+
+    # 查找 rolepermission 关联
+    rp_recs = await sor.sqlExe("SELECT roleid FROM rolepermission WHERE permid=${permid}$", {'permid': permid})
+    if not rp_recs:
+        return UiMessage(title='查询结果', message=f"路径: {path}<br>无任何角色拥有此路径权限。")
+
+    # 查询角色详情
+    role_ids = [r.roleid for r in rp_recs]
+    special_roles = [rid for rid in role_ids if rid in ('any', 'anonymous', 'logined')]
+    normal_ids = [rid for rid in role_ids if rid not in ('any', 'anonymous', 'logined')]
+
+    rows = []
+    for sp in special_roles:
+        rows.append(f"<tr><td>{sp}</td><td>*</td><td>{sp}</td></tr>")
+
+    if normal_ids:
+        placeholders = ','.join([f'${i}$' for i in range(len(normal_ids))])
+        ns = {f'_{i}': rid for i, rid in enumerate(normal_ids)}
+        role_recs = await sor.sqlExe(f"SELECT id, orgtypeid, name FROM role WHERE id IN ({placeholders})", ns)
+        for r in role_recs:
+            name = getattr(r, 'name', r.id)
+            orgtypeid = getattr(r, 'orgtypeid', '*')
+            rows.append(f"<tr><td>{r.id}</td><td>{orgtypeid}</td><td>{name}</td></tr>")
+
+    table_html = (
+        "<table style='border-collapse:collapse;width:100%;'>"
+        "<tr style='background:#334155;color:#fff;'>"
+        "<th style='padding:6px 12px;text-align:left;border:1px solid #475569;'>角色ID</th>"
+        "<th style='padding:6px 12px;text-align:left;border:1px solid #475569;'>orgtypeid</th>"
+        "<th style='padding:6px 12px;text-align:left;border:1px solid #475569;'>名称</th>"
+        "</tr>"
+        + ''.join(rows) +
+        "</table>"
+    )
+
+    html = f"<p>路径: <b>{path}</b> (perm_id: {permid})</p>"
+    html += f"<p>共 {len(rp_recs)} 个角色有权限：</p>"
+    html += table_html
+
+return UiMessage(title='查询结果', message=html)

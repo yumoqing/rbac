@@ -1,0 +1,27 @@
+{
+    "widgettype": "ModalForm",
+    "options": {
+        "cwidth": 20,
+        "cheight": 15,
+        "title": "查询路径权限角色",
+        "fields": [
+            {
+                "name": "path",
+                "label": "路径",
+                "uitype": "str",
+                "placeholder": "如 /harnessed_agent/index.ui"
+            }
+        ]
+    },
+    "binds": [
+        {
+            "wid": "self",
+            "event": "submit",
+            "actiontype": "urlwidget",
+            "target": "root.page_center",
+            "options": {
+                "url": "{{entire_url('./list_path_roles.dspy')}}"
+            }
+        }
+    ]
+}
