@@ -2,25 +2,36 @@
 import os
 
 wwwroot = params_kw.get('wwwroot', '').strip()
-if not wwwroot:
-    wwwroot = None
-
-from appPublic.dictObject import DictObject
 
 # 定位 wwwroot
 if not wwwroot:
-    # 默认: 当前模块 wwwroot 的父目录 wwwroot
-    # rbac/wwwroot -> 找 sage/wwwroot
-    # 如果 sage_root 环境变量存在
     sage_root = os.environ.get('SAGE_ROOT')
     if sage_root:
         wwwroot = os.path.join(sage_root, 'wwwroot')
     else:
-        # 尝试从当前文件路径推断: rbac/wwwroot/xxx.dspy -> sage/wwwroot
+        # 从当前文件路径向上找 wwwroot
+        # 生产: ~/token/sage/wwwroot/rbac/find_unauth_files.dspy
+        # 开发: ~/repos/sage/wwwroot/rbac/find_unauth_files.dspy (通过symlink)
+        # 或:   ~/repos/rbac/wwwroot/find_unauth_files.dspy (rbac repo自身)
         this_file = os.path.abspath(__file__)
-        # 通常在 repos/sage/wwwroot/rbac/find_unauth_files.dspy
-        # wwwroot 是上一层
-        wwwroot = os.path.dirname(os.path.dirname(this_file))
+        # 如果路径中包含 /wwwroot/ 段，直接截断
+        if '/wwwroot/' in this_file:
+            idx = this_file.index('/wwwroot/')
+            wwwroot = this_file[:idx + len('/wwwroot')]
+        else:
+            # 尝试找 wwwroot 子目录
+            for level in range(5):
+                candidate = this_file
+                for _ in range(level):
+                    candidate = os.path.dirname(candidate)
+                    if not candidate or candidate == '/':
+                        break
+                wr = os.path.join(candidate, 'wwwroot')
+                if os.path.isdir(wr):
+                    wwwroot = wr
+                    break
+            if not wwwroot:
+                return UiError(title='错误', message='无法自动定位 wwwroot 目录，请通过参数传入 wwwroot 路径，或设置 SAGE_ROOT 环境变量。')
 
 wwwroot = os.path.abspath(wwwroot)
 if not os.path.isdir(wwwroot):

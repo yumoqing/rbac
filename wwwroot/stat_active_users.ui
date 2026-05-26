@@ -1,0 +1,53 @@
+{% set stats = get_user_stats(request) %}
+{
+    "widgettype": "VBox",
+    "options": {
+        "bgcolor": "#1E293B",
+        "padding": "20px",
+        "borderRadius": "12px",
+        "border": "1px solid #334155",
+        "flex": "1",
+        "minHeight": "110px"
+    },
+    "subwidgets": [
+        {
+            "widgettype": "HBox",
+            "options": {
+                "alignItems": "center",
+                "marginBottom": "12px"
+            },
+            "subwidgets": [
+                {
+                    "widgettype": "Svg",
+                    "options": {
+                        "svg": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#22C55E\" stroke-width=\"2\"><path d=\"M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z\"/><path d=\"M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"/></svg>",
+                        "width": "24px",
+                        "height": "24px"
+                    }
+                },
+                {
+                    "widgettype": "Filler"
+                }
+            ]
+        },
+        {
+            "widgettype": "Text",
+            "options": {
+                "text": "{{stats.active_users_today}}",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#F1F5F9",
+                "lineHeight": "1.1"
+            }
+        },
+        {
+            "widgettype": "Text",
+            "options": {
+                "text": "今日活跃用户",
+                "fontSize": "14px",
+                "color": "#94A3B8",
+                "marginTop": "4px"
+            }
+        }
+    ]
+}
