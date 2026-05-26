@@ -65,7 +65,7 @@ def _bind_rbac_events(dbpools, dbname, up):
 		debug(f'RBAC event bound: {event_name}')
 
 
-async def start_cache_sync():
+async def start_cache_sync(app):
 	"""Start cache_sync and register RBAC reload callbacks."""
 	env = ServerEnv()
 	cache_sync = get_cache_sync()
