@@ -26,6 +26,7 @@ from rbac.set_role_perms import (
 	set_role_perms
 )
 from appPublic.log import debug
+from ahserver.cache_sync import get_cache_sync
 
 async def get_owner_orgid(*args, **kw):
 	return '0'
@@ -62,6 +63,27 @@ def _bind_rbac_events(dbpools, dbname, up):
 	for event_name, handler in bindings:
 		dbpools.bind(event_name, handler)
 		debug(f'RBAC event bound: {event_name}')
+
+
+async def start_cache_sync():
+	"""Start cache_sync and register RBAC reload callbacks."""
+	env = ServerEnv()
+	cache_sync = get_cache_sync()
+	
+	# Get Redis URL from session config
+	try:
+		redis_url = env.conf.website.session_redis.url
+	except AttributeError:
+		redis_url = "redis://127.0.0.1:6379"
+	
+	await cache_sync.start(redis_url)
+	debug(f'RBAC cache_sync started with Redis URL: {redis_url}')
+	
+	# Register callbacks for cache invalidation messages from other processes
+	up = env.userpermissions
+	cache_sync.register('rbac:rp', up.invalidate_rp_cache)
+	cache_sync.register('rbac:ur:all', up.invalidate_all_user_caches)
+	# Note: rbac:ur:{userid} callbacks are handled by the invalidate_user_cache method itself
 
 
 def load_rbac():

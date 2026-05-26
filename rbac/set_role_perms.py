@@ -114,6 +114,31 @@ async def set_role_perms(dbname, module, orgtype, role, items):
 	for tblname in items:
 		await set_role_perm(dbname, module, orgtype, role, tblname)
 
+async def send_rbac_invalidation():
+	"""Send cache invalidation message to all processes via Redis Pub/Sub."""
+	try:
+		from ahserver.cache_sync import get_cache_sync
+		cache_sync = get_cache_sync()
+		# Use default Redis URL for CLI scripts
+		try:
+			from ahserver.serverenv import ServerEnv
+			env = ServerEnv()
+			redis_url = env.conf.website.session_redis.url
+		except (AttributeError, Exception):
+			redis_url = "redis://127.0.0.1:6379"
+		
+		await cache_sync.start(redis_url)
+		# Invalidate both role-permission and all user caches
+		# (CLI scripts typically change permissions/roles)
+		await cache_sync.invalidate('rbac:rp')
+		await cache_sync.invalidate('rbac:ur:all')
+		debug('RBAC CLI: sent cache invalidation messages')
+		# Give a moment for the message to be published
+		await asyncio.sleep(0.1)
+		await cache_sync.stop()
+	except Exception as e:
+		print(f'Warning: Failed to send cache invalidation: {e}')
+
 if __name__ == '__main__':
 	async def main():
 		if len(sys.argv) < 6:
@@ -124,6 +149,8 @@ if __name__ == '__main__':
 		orgtype = sys.argv[3]
 		role = sys.argv[4]
 		await set_role_perms(dbname, module, orgtype, role, sys.argv[5:])
+		# Send invalidation message to all running Sage processes
+		await send_rbac_invalidation()
 		
 	def run(coro):
 		p = '.' 
