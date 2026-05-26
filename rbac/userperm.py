@@ -4,8 +4,6 @@ from sqlor.dbpools import get_sor_context
 from ahserver.serverenv import ServerEnv
 from appPublic.Singleton import SingletonDecorator
 from appPublic.log import debug, error
-from ahserver.cache_sync import get_cache_sync
-
 
 class LRUCache:
 	"""Async-safe LRU cache with TTL support.
@@ -83,82 +81,82 @@ class UserPermissions:
 		# Async lock for rp_caches initialization (lazy init)
 		self._rp_lock = None
 
-	async def on_user_update(self, data):
+	def on_user_update(self, data):
 		"""Event handler for users table update.
 		Clears the specific user's permission cache.
 		"""
 		try:
 			userid = getattr(data, 'id', None)
 			if userid:
-				await self.invalidate_user_cache(userid)
+				self.invalidate_user_cache(userid)
 				debug(f'RBAC cache invalidated for user id={userid} (users update)')
 		except Exception as e:
 			error(f'RBAC on_user_update handler error: {e}')
 
-	async def on_user_create(self, data):
+	def on_user_create(self, data):
 		"""Event handler for users table insert.
 		Clears the specific user's permission cache.
 		"""
 		try:
 			userid = getattr(data, 'id', None)
 			if userid:
-				await self.invalidate_user_cache(userid)
+				self.invalidate_user_cache(userid)
 				debug(f'RBAC cache invalidated for user id={userid} (users create)')
 		except Exception as e:
 			error(f'RBAC on_user_create handler error: {e}')
 
-	async def on_user_delete(self, data):
+	def on_user_delete(self, data):
 		"""Event handler for users table delete.
 		Clears the specific user's permission cache.
 		"""
 		try:
 			userid = getattr(data, 'id', None)
 			if userid:
-				await self.invalidate_user_cache(userid)
+				self.invalidate_user_cache(userid)
 				debug(f'RBAC cache invalidated for user id={userid} (users delete)')
 		except Exception as e:
 			error(f'RBAC on_user_delete handler error: {e}')
 
-	async def on_rolepermission_change(self, data):
+	def on_rolepermission_change(self, data):
 		"""Event handler for rolepermission table C/U/D.
 		Clears the role-permission cache.
 		"""
 		try:
-			await self.invalidate_rp_cache()
+			self.invalidate_rp_cache()
 			debug('RBAC role-permission cache invalidated (rolepermission change)')
 		except Exception as e:
 			error(f'RBAC on_rolepermission_change handler error: {e}')
 
-	async def on_permission_change(self, data):
+	def on_permission_change(self, data):
 		"""Event handler for permission table update.
 		Clears the role-permission cache.
 		"""
 		try:
-			await self.invalidate_rp_cache()
+			self.invalidate_rp_cache()
 			debug('RBAC role-permission cache invalidated (permission change)')
 		except Exception as e:
 			error(f'RBAC on_permission_change handler error: {e}')
 
-	async def on_role_change(self, data):
+	def on_role_change(self, data):
 		"""Event handler for role table C/U/D.
 		Clears all user caches and role-permission cache,
 		since role changes may affect any user.
 		"""
 		try:
-			await self.invalidate_all_user_caches()
-			await self.invalidate_rp_cache()
+			self.invalidate_all_user_caches()
+			self.invalidate_rp_cache()
 			debug('RBAC all caches invalidated (role change)')
 		except Exception as e:
 			error(f'RBAC on_role_change handler error: {e}')
 
-	async def on_userrole_change(self, data):
+	def on_userrole_change(self, data):
 		"""Event handler for userrole table C/U/D.
 		Clears the specific user's permission cache based on userid.
 		"""
 		try:
 			userid = getattr(data, 'userid', None)
 			if userid:
-				await self.invalidate_user_cache(userid)
+				self.invalidate_user_cache(userid)
 				debug(f'RBAC cache invalidated for user id={userid} (userrole change)')
 		except Exception as e:
 			error(f'RBAC on_userrole_change handler error: {e}')
@@ -182,37 +180,20 @@ class UserPermissions:
 			return self.ur_caches.get(userid)
 		return None
 	
-	async def invalidate_user_cache(self, userid):
+	def invalidate_user_cache(self, userid):
 		"""Invalidate cache for a specific user.
 		Call this after role changes, user creation, etc.
-		Also broadcasts invalidation to all other processes via Redis Pub/Sub.
 		"""
 		self.ur_caches.invalidate(userid)
-		# Broadcast to other processes
-		cache_sync = get_cache_sync()
-		if cache_sync.is_running:
-			await cache_sync.invalidate(f'rbac:ur:{userid}')
 	
-	async def invalidate_all_user_caches(self):
-		"""Invalidate all user role caches.
-		Also broadcasts invalidation to all other processes via Redis Pub/Sub.
-		"""
+	def invalidate_all_user_caches(self):
+		"""Invalidate all user role caches."""
 		self.ur_caches.clear()
-		# Broadcast to other processes
-		cache_sync = get_cache_sync()
-		if cache_sync.is_running:
-			await cache_sync.invalidate('rbac:ur:all')
 	
-	async def invalidate_rp_cache(self):
-		"""Invalidate role-permission cache (after permission changes).
-		Also broadcasts invalidation to all other processes via Redis Pub/Sub.
-		"""
+	def invalidate_rp_cache(self):
+		"""Invalidate role-permission cache (after permission changes)."""
 		self.rp_caches = None
 		self.rp_cache_loaded_at = 0
-		# Broadcast to other processes
-		cache_sync = get_cache_sync()
-		if cache_sync.is_running:
-			await cache_sync.invalidate('rbac:rp')
 	
 	async def load_roleperms(self, sor):
 		"""Load all role-permission mappings into cache.
