@@ -1,9 +1,38 @@
 await forget_user()
 return {
-	"widgettype":"Text",
-	"options":{
-		"otext":"logout success",
-		"i18n":True,
-	}
+	"widgettype": "VBox",
+	"options": {
+		"padding": "24px",
+		"alignItems": "center"
+	},
+	"subwidgets": [
+		{
+			"widgettype": "Text",
+			"options": {
+				"otext": "logout success",
+				"i18n": True,
+				"fontSize": "16px",
+				"marginBottom": "16px"
+			}
+		},
+		{
+			"widgettype": "Button",
+			"options": {
+				"label": "刷新页面",
+				"bgcolor": "#3B82F6",
+				"color": "white",
+				"padding": "8px 24px",
+				"borderRadius": "6px"
+			},
+			"binds": [
+				{
+					"wid": "self",
+					"event": "click",
+					"actiontype": "script",
+					"target": "self",
+					"script": "location.reload()"
+				}
+			]
+		}
+	]
 }
-
