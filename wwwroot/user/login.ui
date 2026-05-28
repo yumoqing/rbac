@@ -89,8 +89,10 @@
                                     "wid": "self",
                                     "event": "gen_code",
                                     "actiontype": "script",
+                                    "datawidget": "self",
+                                    "datamethod": "getValue",
                                     "target": "self",
-                                    "script": "var form=this;var vals=form.getValue();if(!vals.cell_no){alert('请输入手机号');return;}fetch(form.app.baseUrl+'/rbac/gen_sms_code.dspy?cellphone='+encodeURIComponent(vals.cell_no)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){form.setValue({codeid:d.data.key});alert('验证码已发送')}else{alert(d.data.message)}}).catch(function(e){alert('发送失败:'+e)})"
+                                    "script": "var cell=params.cell_no;if(!cell){alert('请输入手机号');return;}fetch(bricks.app.baseUrl+'/rbac/gen_sms_code.dspy?cellphone='+encodeURIComponent(cell)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){this.setValue({codeid:d.data.key});alert('验证码已发送')}else{alert(d.data.message)}}.bind(this)).catch(function(e){alert('发送失败:'+e)})"
                                 },
                                 {
                                     "wid": "self",
