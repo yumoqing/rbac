@@ -1,18 +1,69 @@
-debug(f'{params_kw=}')
+debug(f'register.dspy: {params_kw=}')
 db = DBPools()
 dbname = get_module_dbname('rbac')
 async with db.sqlorContext(dbname) as sor:
 	data = await register_user(sor, params_kw)
 	data = DictObject(**data)
+	if data.status == 'error':
+		debug(f"register error: {data.data.message}")
+		return {
+			"widgettype": "Error",
+			"options": {
+				"timeout": 5,
+				"title": "注册失败",
+				"message": data.data.message
+			}
+		}
+	user = data.data.user
+	orgid = user.orgid
 	try:
-		if data['status'] == 'error':
-			debug(f"{data.data.message}")
-			return UiError(title='Error', message=data.data.message)
-		orgid = data.data.user.orgid
 		await openCustomerAccounts(sor, '0', orgid)
 		debug(f'{orgid} accounts opened')
 	except Exception as e:
 		exception(f'{e},{orgid=}')
 
-	return UiMessage(title="Success", message=f"register success {orgid}")
-return UiError(title='Error', message="register failed")
+	# 注册成功后自动登录
+	await remember_user(user.id, username=user.username, userorgid=user.orgid)
+	return {
+		"widgettype": "Message",
+		"options": {
+			"timeout": 3,
+			"auto_open": True,
+			"title": "注册成功",
+			"message": f"{user.username} 注册成功，已自动登录"
+		},
+		"binds": [
+			{
+				"wid": "self",
+				"event": "dismissed",
+				"actiontype": "urlwidget",
+				"target": "window.user_container",
+				"options": {
+					"url": entire_url('/rbac/user/userinfo.ui')
+				}
+			},
+			{
+				"wid": "self",
+				"event": "dismissed",
+				"actiontype": "script",
+				"target": "body.login_window",
+				"script": "if(this.destroy) this.destroy()"
+			},
+			{
+				"wid": "self",
+				"event": "dismissed",
+				"actiontype": "script",
+				"target": "self",
+				"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
+			}
+		]
+	}
+
+return {
+	"widgettype": "Error",
+	"options": {
+		"timeout": 5,
+		"title": "注册失败",
+		"message": "系统错误，请稍后重试"
+	}
+}

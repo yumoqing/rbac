@@ -1,0 +1,257 @@
+# 手机验证码登录 - 接收前端表单参数(cell_no, codeid, check_code)
+# 调用sms_engine验证后完成登录或自动注册
+debug(f'code_login.dspy: {params_kw=}')
+
+cellphone = params_kw.cell_no
+key = params_kw.codeid
+sms_code = params_kw.check_code
+
+if not cellphone:
+	return {
+		"widgettype": "Error",
+		"options": {
+			"timeout": 3,
+			"title": "错误",
+			"message": "需输入手机号"
+		}
+	}
+if not sms_code:
+	return {
+		"widgettype": "Error",
+		"options": {
+			"timeout": 3,
+			"title": "错误",
+			"message": "需输入验证码"
+		}
+	}
+if not key:
+	return {
+		"widgettype": "Error",
+		"options": {
+			"timeout": 3,
+			"title": "错误",
+			"message": "需要短信验证key"
+		}
+	}
+
+# 验证短信码
+ok = await sms_engine.check_sms_code(key, sms_code)
+if not ok:
+	return {
+		"widgettype": "Error",
+		"options": {
+			"timeout": 3,
+			"title": "验证失败",
+			"message": "手机短信验证码出错"
+		}
+	}
+
+# 验证通过，查找或注册用户
+ns = {
+	"username": cellphone,
+	"password": "^&%UHI",
+	"cfm_password": "^&%UHI",
+	"mobile": cellphone,
+	"user_status": "0"
+}
+udata = DictObject(**ns)
+
+try:
+	async with get_sor_context(request._run_ns, 'rbac') as sor:
+		recs = await sor.R('users', {'mobile': cellphone})
+		if recs:
+			if len(recs) == 1:
+				r = recs[0]
+				now_str = timestampstr()
+				await sor.sqlExe("""
+					UPDATE users
+					SET last_login = ${now}$, login_fail_count = 0,
+						last_login_fail = NULL
+					WHERE id = ${id}$
+				""", {'id': r.id, 'now': now_str})
+				await remember_user(r.id, username=r.username, userorgid=r.orgid)
+				return {
+					"widgettype": "Message",
+					"options": {
+						"timeout": 3,
+						"auto_open": True,
+						"title": "登录成功",
+						"message": f"{r.username} 欢迎回来"
+					},
+					"binds": [
+						{
+							"wid": "self",
+							"event": "dismissed",
+							"actiontype": "urlwidget",
+							"target": "window.user_container",
+							"options": {
+								"url": entire_url('/rbac/user/userinfo.ui')
+							}
+						},
+						{
+							"wid": "self",
+							"event": "dismissed",
+							"actiontype": "script",
+							"target": "body.login_window",
+							"script": "this.destroy()"
+						},
+						{
+							"wid": "self",
+							"event": "dismissed",
+							"actiontype": "script",
+							"target": "self",
+							"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
+						}
+					]
+				}
+			# 多个用户绑定同一手机号
+			if params_kw.selected_id:
+				for r in recs:
+					if r.id == params_kw.selected_id:
+						now_str = timestampstr()
+						await sor.sqlExe("""
+							UPDATE users
+							SET last_login = ${now}$, login_fail_count = 0,
+								last_login_fail = NULL
+							WHERE id = ${id}$
+						""", {'id': r.id, 'now': now_str})
+						await remember_user(r.id, username=r.username, userorgid=r.orgid)
+						return {
+							"widgettype": "Message",
+							"options": {
+								"timeout": 3,
+								"auto_open": True,
+								"title": "登录成功",
+								"message": f"{r.username} 欢迎回来"
+							},
+							"binds": [
+								{
+									"wid": "self",
+									"event": "dismissed",
+									"actiontype": "urlwidget",
+									"target": "window.user_container",
+									"options": {
+										"url": entire_url('/rbac/user/userinfo.ui')
+									}
+								},
+								{
+									"wid": "self",
+									"event": "dismissed",
+									"actiontype": "script",
+									"target": "body.login_window",
+									"script": "this.destroy()"
+								},
+								{
+									"wid": "self",
+									"event": "dismissed",
+									"actiontype": "script",
+									"target": "self",
+									"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
+								}
+							]
+						}
+			else:
+				# 返回用户选择列表
+				buttons = []
+				for r in recs:
+					buttons.append({
+						"widgettype": "Button",
+						"options": {
+							"label": f"{r.username} ({r.id})",
+							"width": "100%",
+							"margin": "4px 0"
+						},
+						"binds": [{
+							"wid": "self",
+							"event": "click",
+							"actiontype": "urlwidget",
+							"target": "self",
+							"options": {
+								"url": entire_url('/rbac/user/code_login.dspy'),
+								"params": {
+									"cell_no": cellphone,
+									"codeid": key,
+									"check_code": sms_code,
+									"selected_id": r.id
+								}
+							}
+						}]
+					})
+				return {
+					"widgettype": "VBox",
+					"options": {"padding": "12px"},
+					"subwidgets": [
+						{
+							"widgettype": "Text",
+							"options": {
+								"text": "该手机号关联多个账号，请选择：",
+								"fontSize": "14px",
+								"margin": "0 0 8px 0"
+							}
+						}
+					] + buttons
+				}
+
+		# 新用户自动注册
+		d = await register_user(sor, udata)
+		if d['status'] == 'error':
+			return {
+				"widgettype": "Error",
+				"options": {
+					"timeout": 5,
+					"title": "注册失败",
+					"message": d['data']['message']
+				}
+			}
+		try:
+			ownerid = await get_owner_orgid(sor, orgid)
+			await openCustomerAccounts(sor, ownerid, orgid)
+		except Exception as e:
+			exception(f'{e}')
+
+		r = d['data']['user']
+		await remember_user(r.id, username=r.username, userorgid=r.orgid)
+		return {
+			"widgettype": "Message",
+			"options": {
+				"timeout": 3,
+				"auto_open": True,
+				"title": "登录成功",
+				"message": f"{r.username} 欢迎"
+			},
+			"binds": [
+				{
+					"wid": "self",
+					"event": "dismissed",
+					"actiontype": "urlwidget",
+					"target": "window.user_container",
+					"options": {
+						"url": entire_url('/rbac/user/userinfo.ui')
+					}
+				},
+				{
+					"wid": "self",
+					"event": "dismissed",
+					"actiontype": "script",
+					"target": "body.login_window",
+					"script": "this.destroy()"
+				},
+				{
+					"wid": "self",
+					"event": "dismissed",
+					"actiontype": "script",
+					"target": "self",
+					"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
+				}
+			]
+		}
+except Exception as e:
+	exception(f'code_login error: {e}')
+	return {
+		"widgettype": "Error",
+		"options": {
+			"timeout": 5,
+			"title": "系统错误",
+			"message": f"{e}"
+		}
+	}

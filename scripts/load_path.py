@@ -41,8 +41,10 @@ MOD = "rbac"
 # any — 无需登录（菜单、登录页等）
 PATHS_ANY = [
     f"/rbac/admin_menu.ui",
+    f"/rbac/gen_sms_code.dspy",
     f"/rbac/phone_login.dspy",
     f"/rbac/qr_scan.ui",
+    f"/rbac/user/code_login.dspy",
     f"/rbac/user/login.ui",
     f"/rbac/user/logout.dspy",
     f"/rbac/user/register.dspy",
@@ -64,7 +66,6 @@ PATHS_LOGINED = [
     f"/rbac/add_reseller.dspy",
     f"/rbac/add_superuser.dspy",
     f"/rbac/find_unauth_files.dspy",
-    f"/rbac/gen_sms_code.dspy",
     f"/rbac/get_all_roles.dspy",
     f"/rbac/get_normal_roles.dspy",
     f"/rbac/get_provider.dspy",
