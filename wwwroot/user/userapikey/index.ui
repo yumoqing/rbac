@@ -1,4 +1,10 @@
-
+{
+    "widgettype": "VBox",
+    "options": {
+        "cheight": 40,
+        "width": "100%"
+    },
+    "subwidgets": [
 {
     "widgettype":"Tabular",
     "options":{
@@ -123,4 +129,6 @@
         "cache_limit":5
     }
 
+}
+    ]
 }
