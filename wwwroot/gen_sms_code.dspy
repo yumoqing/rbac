@@ -12,7 +12,7 @@ if xx is None:
 	return {
 		"status": "error",
 		"data": {
-			"message": "发送验证码出错"
+			"message": "发送验证码出错，请检查短信服务配置"
 		}
 	}
 id, code = xx

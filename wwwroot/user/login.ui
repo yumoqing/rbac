@@ -1,4 +1,5 @@
 {% set sms_code_url = entire_url('/rbac/gen_sms_code.dspy') %}
+{% set phone_login_url = entire_url('/rbac/phone_login.dspy') %}
 {
     "id": "login_window",
     "widgettype": "PopupWindow",
@@ -12,6 +13,7 @@
     "subwidgets": [
         {
             "widgettype": "TabPanel",
+            "id": "login_tabs",
             "options": {
                 "tab_wide": "auto",
                 "height": "100%",
@@ -53,16 +55,21 @@
                         }
                     },
                     {
-                        "name": "checkcode",
+                        "name": "phonecode",
                         "label": "手机验证码",
                         "content": {
                             "widgettype": "VBox",
+                            "options": {
+                                "padding": "8px",
+                                "gap": "8px"
+                            },
                             "subwidgets": [
                                 {
                                     "widgettype": "Form",
                                     "id": "phone_form",
                                     "options": {
-                                        "description": "限中国国内手机",
+                                        "description": "限中国国内手机号",
+                                        "cols": 1,
                                         "fields": [
                                             {
                                                 "name": "cell_no",
@@ -71,7 +78,7 @@
                                             },
                                             {
                                                 "name": "codeid",
-                                                "uitype": "hide",
+                                                "uitype": "hidden",
                                                 "value": ""
                                             },
                                             {
@@ -80,33 +87,46 @@
                                                 "uitype": "str"
                                             }
                                         ]
-                                    },
-                                    "binds": [
-                                        {
-                                            "wid": "self",
-                                            "event": "submit",
-                                            "actiontype": "urlwidget",
-                                            "target": "self",
-                                            "options": {
-                                                "method": "POST",
-                                                "url": "{{entire_url('code_login.dspy')}}"
-                                            }
-                                        }
-                                    ]
+                                    }
                                 },
                                 {
-                                    "widgettype": "Button",
-                                    "id": "gen_code_btn",
+                                    "widgettype": "HBox",
                                     "options": {
-                                        "label": "发送验证码"
+                                        "gap": "8px"
                                     },
-                                    "binds": [
+                                    "subwidgets": [
                                         {
-                                            "wid": "self",
-                                            "event": "click",
-                                            "actiontype": "script",
-                                            "target": "self",
-                                            "script": "var form=bricks.getWidgetById('phone_form',bricks.app);if(!form){alert('form not found');return;}var vals=form._getValue();var cell=vals.cell_no;if(!cell){alert('请输入手机号');return;}var btn=bricks.getWidgetById('gen_code_btn',bricks.app);if(btn&&btn.text_w){btn.text_w.set_otext('发送中...')}fetch('{{sms_code_url}}?cellphone='+encodeURIComponent(cell)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){form.setValue({codeid:d.data.key});if(btn&&btn.text_w){btn.text_w.set_otext('已发送('+cell+')')}}else{alert(d.data.message);if(btn&&btn.text_w){btn.text_w.set_otext('发送验证码')}}}).catch(function(e){alert('发送失败:'+e);if(btn&&btn.text_w){btn.text_w.set_otext('发送验证码')}})"
+                                            "widgettype": "Button",
+                                            "id": "gen_code_btn",
+                                            "options": {
+                                                "label": "发送验证码"
+                                            },
+                                            "binds": [
+                                                {
+                                                    "wid": "self",
+                                                    "event": "click",
+                                                    "actiontype": "script",
+                                                    "target": "self",
+                                                    "script": "var form=bricks.getWidgetById('phone_form',bricks.app);if(!form){alert('form not found');return;}var vals=form._getValue();var cell=vals.cell_no;if(!cell||cell.length<11){alert('请输入正确的手机号');return;}var btn=bricks.getWidgetById('gen_code_btn',bricks.app);btn.disabled=true;if(btn.text_w)btn.text_w.set_otext('发送中...');fetch('{{sms_code_url}}?_webbricks_=1&cellphone='+encodeURIComponent(cell)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){form.setValue({codeid:d.data.key});if(btn.text_w)btn.text_w.set_otext('已发送');var sec=60;var tmr=setInterval(function(){sec--;if(sec<=0){clearInterval(tmr);btn.disabled=false;if(btn.text_w)btn.text_w.set_otext('重新发送')}else{if(btn.text_w)btn.text_w.set_otext(sec+'s')}},1000)}else{alert(d.data.message||'发送验证码出错');btn.disabled=false;if(btn.text_w)btn.text_w.set_otext('发送验证码')}}).catch(function(e){alert('网络错误: '+e);btn.disabled=false;if(btn.text_w)btn.text_w.set_otext('发送验证码')})"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "widgettype": "Button",
+                                            "id": "phone_login_btn",
+                                            "options": {
+                                                "label": "登录",
+                                                "css": "sage-btn-primary"
+                                            },
+                                            "binds": [
+                                                {
+                                                    "wid": "self",
+                                                    "event": "click",
+                                                    "actiontype": "script",
+                                                    "target": "self",
+                                                    "script": "var form=bricks.getWidgetById('phone_form',bricks.app);if(!form)return;var vals=form._getValue();if(!vals.cell_no){alert('请输入手机号');return;}if(!vals.check_code){alert('请输入验证码');return;}if(!vals.codeid){alert('请先发送验证码');return;}var btn=bricks.getWidgetById('phone_login_btn',bricks.app);btn.disabled=true;if(btn.text_w)btn.text_w.set_otext('登录中...');var body='cellphone='+encodeURIComponent(vals.cell_no)+'&key='+encodeURIComponent(vals.codeid)+'&sms_code='+encodeURIComponent(vals.check_code);fetch('{{phone_login_url}}?_webbricks_=1',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json()}).then(function(d){btn.disabled=false;if(btn.text_w)btn.text_w.set_otext('登录');if(d.status==='ok'){var u=d.data.user;var nick=u.nick_name||u.username;var msgW={widgettype:'Message',options:{timeout:3,auto_open:true,title:'登录成功',message:nick+' 欢迎'},binds:[{wid:'self',event:'dismissed',actiontype:'script',target:'self',script:'if(bricks.app&&bricks.app.dispatch)bricks.app.dispatch(\"user_logined\")'},{wid:'self',event:'dismissed',actiontype:'script',target:'body.login_window',script:'this.destroy()'}]};bricks.widgetBuild(msgW,bricks.app).then(function(w){if(w)bricks.app.add_widget(w)})}else if(d.status==='choose'){var users=d.data.users;var html='<div style=\"padding:12px\"><p style=\"margin:0 0 12px\">该手机号关联多个账号，请选择：</p>';for(var i=0;i<users.length;i++){html+='<button onclick=\"sageSelectAccount(\\x27'+users[i].id+'\\x27)\" style=\"display:block;width:100%;padding:10px;margin:4px 0;cursor:pointer;border:1px solid #ccc;border-radius:4px;background:#f5f5f5;text-align:left;font-size:14px\">'+users[i].username+'</button>'}html+='</div>';var cw=bricks.getWidgetById('choose_container',bricks.app);if(cw){cw.dom_element.innerHTML=html;cw.dom_element.style.display=''}else{var div=document.createElement('div');div.id='choose_container';div.innerHTML=html;form.dom_element.parentElement.appendChild(div)}form.dom_element.style.display='none'}else{alert(d.data.message||'登录失败')}}).catch(function(e){btn.disabled=false;if(btn.text_w)btn.text_w.set_otext('登录');alert('网络错误: '+e)})"
+                                                }
+                                            ]
                                         }
                                     ]
                                 }
