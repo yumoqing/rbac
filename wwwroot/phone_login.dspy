@@ -21,12 +21,7 @@ if params_kw.key is None:
 			"message": "需要短信验证key"
 		}
 	}
-
-# First check (no selected_id): verify code but don't consume it yet
-# (multi-account flow needs the code to remain valid for the second call)
-# Second check (with selected_id): verify and consume the code
-mark_used = bool(params_kw.selected_id)
-f = await sms_engine.check_sms_code(params_kw.key, params_kw.sms_code, mark_used=mark_used)
+f = await sms_engine.check_sms_code(params_kw.key, params_kw.sms_code)
 if not f:
 	return {
 		"status": "error",
@@ -49,9 +44,7 @@ try:
 		if recs:
 			if len(recs) == 1:
 				r = recs[0]
-				# Single account: code already verified, now mark as used
-				if not mark_used:
-					await sms_engine.check_sms_code(params_kw.key, params_kw.sms_code, mark_used=True)
+				# Update last_login atomically (standard SQL, no DB-specific functions)
 				now_str = timestampstr()
 				await sor.sqlExe("""
 					UPDATE users 
@@ -60,6 +53,7 @@ try:
 					WHERE id = ${id}$
 				""", {'id': r.id, 'now': now_str})
 				await remember_user(r.id, username=r.username, userorgid=r.orgid)
+				debug(f'here')
 				return {
 					"status": "ok",
 					"data":{
@@ -77,6 +71,7 @@ try:
 							WHERE id = ${id}$
 						""", {'id': r.id, 'now': now_str})
 						await remember_user(r.id, username=r.username, userorgid=r.orgid)
+						debug(f'here')
 						return {
 							"status": "ok",
 							"data":{
@@ -84,16 +79,17 @@ try:
 							}
 						}
 			else:
+				debug(f'here')
 				return {
 					"status": "choose",
 					"data": {
-						"key": params_kw.key,
 						"users": recs
 					}
 				}
 
 		d = await register_user(sor, udata)
 		if d['status'] == 'error':
+			debug(f'here, {d}')
 			return d
 		try:
 			ownerid = await get_owner_orgid(sor, orgid)
@@ -101,11 +97,9 @@ try:
 		except Exception as e:
 			exception(f'{e}')
 		
-		# New user registered: code already verified, mark as used
-		if not mark_used:
-			await sms_engine.check_sms_code(params_kw.key, params_kw.sms_code, mark_used=True)
 		r = d['data']['user']
 		await remember_user(r.id, username=r.username, userorgid=r.orgid)
+		debug(f'here')
 		return {
 			"status": "ok",
 			"data":{
