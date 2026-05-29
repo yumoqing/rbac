@@ -281,7 +281,8 @@ where a.id = c.userid
 		
 		Supports:
 		- Exact match: '/customer_management/index.ui' or '/main/login.ui'
-		- Wildcard prefix match: '/customer_management/**' matches any path starting with '/customer_management/'
+		- Wildcard prefix match: '/customer_management/**' or '/customer_management/%'
+		  matches any path starting with '/customer_management/'
 		- Path normalization: tries both the raw path and path with /main stripped
 		"""
 		for role in roles:
@@ -298,16 +299,22 @@ where a.id = c.userid
 					return True
 				# Also try wildcard match with normalized path
 				for perm_path in paths:
+					prefix = None
 					if perm_path.endswith('**'):
 						prefix = perm_path[:-2]
-						if normalized.startswith(prefix) or path.startswith(prefix):
-							return True
+					elif perm_path.endswith('%'):
+						prefix = perm_path[:-1]
+					if prefix and (normalized.startswith(prefix) or path.startswith(prefix)):
+						return True
 			# Wildcard prefix match with raw path
 			for perm_path in paths:
+				prefix = None
 				if perm_path.endswith('**'):
 					prefix = perm_path[:-2]
-					if path.startswith(prefix):
-						return True
+				elif perm_path.endswith('%'):
+					prefix = perm_path[:-1]
+				if prefix and path.startswith(prefix):
+					return True
 		return False
 	
 	async def is_user_has_path_perm(self, userid, path):
