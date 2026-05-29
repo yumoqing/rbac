@@ -4,6 +4,19 @@ from sqlor.dbpools import get_sor_context
 from ahserver.serverenv import ServerEnv
 from appPublic.Singleton import SingletonDecorator
 from appPublic.log import debug, error
+from appPublic.jsonConfig import getConfig
+
+
+def _cache_enabled(module_name='rbac'):
+	"""Check if cache is enabled for the given module in config.json"""
+	try:
+		config = getConfig()
+		module_cache = config.module_cache
+		if module_cache is None:
+			return True  # Default to enabled if not configured
+		return getattr(module_cache, module_name, True)
+	except Exception:
+		return True  # Default to enabled on error
 
 class LRUCache:
 	"""Async-safe LRU cache with TTL support.
@@ -25,6 +38,8 @@ class LRUCache:
 	
 	def get(self, key):
 		import time
+		if not _cache_enabled('rbac'):
+			return None
 		if key not in self._cache:
 			return None
 		value, expire_at = self._cache[key]
@@ -36,6 +51,8 @@ class LRUCache:
 	
 	def set(self, key, value):
 		import time
+		if not _cache_enabled('rbac'):
+			return
 		if key in self._cache:
 			self._cache.move_to_end(key)
 		self._cache[key] = (value, time.time() + self.ttl)
@@ -207,13 +224,13 @@ class UserPermissions:
 		now = time.time()
 		
 		# Fast path: cache valid, no lock needed
-		if self.rp_caches is not None and (now - self.rp_cache_loaded_at) < self.rp_cache_ttl:
+		if _cache_enabled('rbac') and self.rp_caches is not None and (now - self.rp_cache_loaded_at) < self.rp_cache_ttl:
 			return
 		
 		# Slow path: acquire lock and double-check
 		async with self._get_rp_lock():
 			# Double-check after lock acquisition
-			if self.rp_caches is not None and (now - self.rp_cache_loaded_at) < self.rp_cache_ttl:
+			if _cache_enabled('rbac') and self.rp_caches is not None and (now - self.rp_cache_loaded_at) < self.rp_cache_ttl:
 				return
 			
 			self.rp_caches = {}
