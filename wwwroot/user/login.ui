@@ -121,21 +121,21 @@
                         "name": "register",
                         "label": "注册账号",
                         "content": {
-                            "widgettype": "VScrollPanel",
-                            "options": {"height": "100%"},
+                            "widgettype": "VBox",
+                            "options": {"gap": "8px", "height": "100%"},
                             "subwidgets": [
                                 {
-                                    "widgettype": "VBox",
-                                    "options": {"gap": "8px"},
+                                    "widgettype": "Text",
+                                    "options": {
+                                        "otext": "手机号需短信验证后方可注册",
+                                        "i18n": true,
+                                        "css": "login-desc"
+                                    }
+                                },
+                                {
+                                    "widgettype": "VScrollPanel",
+                                    "options": {"height": "100%", "flex": "1"},
                                     "subwidgets": [
-                                        {
-                                            "widgettype": "Text",
-                                            "options": {
-                                                "otext": "手机号需短信验证后方可注册",
-                                                "i18n": true,
-                                                "css": "login-desc"
-                                            }
-                                        },
                                         {
                                             "widgettype": "Form",
                                             "id": "register_form",
@@ -162,20 +162,20 @@
                                                     }
                                                 }
                                             ]
-                                        },
+                                        }
+                                    ]
+                                },
+                                {
+                                    "widgettype": "Button",
+                                    "id": "reg_sms_btn",
+                                    "options": {"label": "发送验证码", "i18n": true, "css": "sms-send-btn"},
+                                    "binds": [
                                         {
-                                            "widgettype": "Button",
-                                            "id": "reg_sms_btn",
-                                            "options": {"label": "发送验证码", "i18n": true, "css": "sms-send-btn"},
-                                            "binds": [
-                                                {
-                                                    "wid": "self",
-                                                    "event": "click",
-                                                    "actiontype": "script",
-                                                    "target": "self",
-                                                    "script": "var form=bricks.getWidgetById('register_form',bricks.app);if(!form)return;var cell=form._getValue().mobile;if(!cell||cell.length<11){alert('请输入正确的手机号');return;}var btn=this;btn.disabled=true;btn.text_w&&btn.text_w.set_otext('发送中...');fetch('{{sms_code_url}}?_webbricks_=1&cellphone='+encodeURIComponent(cell)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){var w=form.name_inputs['codeid'];if(w)w.setValue(d.data.key);btn.text_w&&btn.text_w.set_otext('已发送');var s=60;var t=setInterval(function(){s--;if(s<=0){clearInterval(t);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('重新发送')}else btn.text_w&&btn.text_w.set_otext(s+'s')},1000)}else{alert(d.data.message||'发送验证码出错');btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')}}).catch(function(e){alert('网络错误: '+e);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')})"
-                                                }
-                                            ]
+                                            "wid": "self",
+                                            "event": "click",
+                                            "actiontype": "script",
+                                            "target": "self",
+                                            "script": "var form=bricks.getWidgetById('register_form',bricks.app);if(!form)return;var cell=form._getValue().mobile;if(!cell||cell.length<11){alert('请输入正确的手机号');return;}var btn=this;btn.disabled=true;btn.text_w&&btn.text_w.set_otext('发送中...');fetch('{{sms_code_url}}?_webbricks_=1&cellphone='+encodeURIComponent(cell)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){var w=form.name_inputs['codeid'];if(w)w.setValue(d.data.key);btn.text_w&&btn.text_w.set_otext('已发送');var s=60;var t=setInterval(function(){s--;if(s<=0){clearInterval(t);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('重新发送')}else btn.text_w&&btn.text_w.set_otext(s+'s')},1000)}else{alert(d.data.message||'发送验证码出错');btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')}}).catch(function(e){alert('网络错误: '+e);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')})"
                                         }
                                     ]
                                 }
