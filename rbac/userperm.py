@@ -246,6 +246,10 @@ where a.permid = b.id
 	and c.id = a.roleid
 order by c.orgtypeid, c.name"""
 			recs = await sor.sqlExe(sql_all, {})
+			if len(recs) == 0 and self.rp_caches:
+				# DB returned empty — likely a bad connection. Keep previous valid cache.
+				debug(f'load_roleperms: got 0 records, keeping previous cache ({sum(len(v) for v in self.rp_caches.values())} paths)')
+				return
 			for r in recs:
 				if r.id == 'anonymous':
 					k = 'anonymous'
