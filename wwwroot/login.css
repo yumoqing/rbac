@@ -31,6 +31,8 @@
 .login-window .tabpanel {
 	background: transparent !important;
 	border: none !important;
+	display: flex !important;
+	flex-direction: column !important;
 }
 .login-window .tabpanel-tabs {
 	display: flex !important;
@@ -61,8 +63,17 @@
 	background: transparent !important;
 }
 .login-window .tabpanel-content {
-	padding: 20px 24px !important;
+	padding: 0 !important;
 	background: #ffffff !important;
+	overflow: hidden !important;
+	flex: 1 !important;
+	min-height: 0 !important;
+}
+.login-window .tabpanel-content .scrollpanel {
+	height: 100% !important;
+}
+.login-window .tabpanel-content .scrollpanel .vcontainer {
+	padding: 20px 24px !important;
 }
 
 /* Form styling */

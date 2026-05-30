@@ -6,11 +6,12 @@
     "widgettype": "PopupWindow",
     "options": {
         "title": "欢迎登录",
+        "i18n": true,
         "css": "login-window",
         "auto_open": true,
-        "anthor": "cc",
+        "archor": "cc",
         "cwidth": 26,
-        "cheight": 28
+        "cheight": 30
     },
     "subwidgets": [
         {
@@ -26,51 +27,16 @@
                         "name": "userpasswd",
                         "label": "密码登录",
                         "content": {
-                            "widgettype": "Form",
-                            "options": {
-                                "cols": 1,
-                                "fields": [
-                                    {"name": "username", "label": "用户名", "uitype": "str"},
-                                    {"name": "password", "label": "密码", "uitype": "password"}
-                                ]
-                            },
-                            "binds": [
-                                {
-                                    "wid": "self",
-                                    "event": "submit",
-                                    "actiontype": "urlwidget",
-                                    "target": "self",
-                                    "options": {
-                                        "method": "POST",
-                                        "url": "{{entire_url('up_login.dspy')}}"
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "name": "phonecode",
-                        "label": "手机登录",
-                        "content": {
-                            "widgettype": "VBox",
-                            "options": {"gap": "8px"},
+                            "widgettype": "VScrollPanel",
+                            "options": {"height": "100%"},
                             "subwidgets": [
                                 {
-                                    "widgettype": "Text",
-                                    "options": {
-                                        "text": "未注册的手机号将自动创建账号",
-                                        "css": "login-desc"
-                                    }
-                                },
-                                {
                                     "widgettype": "Form",
-                                    "id": "phone_form",
                                     "options": {
                                         "cols": 1,
                                         "fields": [
-                                            {"name": "cell_no", "label": "手机号", "uitype": "str"},
-                                            {"name": "codeid", "uitype": "hide", "value": ""},
-                                            {"name": "check_code", "label": "验证码", "uitype": "str"}
+                                            {"name": "username", "label": "用户名", "uitype": "str"},
+                                            {"name": "password", "label": "密码", "uitype": "password"}
                                         ]
                                     },
                                     "binds": [
@@ -81,22 +47,70 @@
                                             "target": "self",
                                             "options": {
                                                 "method": "POST",
-                                                "url": "{{code_login_url}}"
+                                                "url": "{{entire_url('up_login.dspy')}}"
                                             }
                                         }
                                     ]
-                                },
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "phonecode",
+                        "label": "手机登录",
+                        "content": {
+                            "widgettype": "VScrollPanel",
+                            "options": {"height": "100%"},
+                            "subwidgets": [
                                 {
-                                    "widgettype": "Button",
-                                    "id": "gen_code_btn",
-                                    "options": {"label": "发送验证码", "css": "sms-send-btn"},
-                                    "binds": [
+                                    "widgettype": "VBox",
+                                    "options": {"gap": "8px"},
+                                    "subwidgets": [
                                         {
-                                            "wid": "self",
-                                            "event": "click",
-                                            "actiontype": "script",
-                                            "target": "self",
-                                            "script": "var form=bricks.getWidgetById('phone_form',bricks.app);if(!form)return;var cell=form._getValue().cell_no;if(!cell||cell.length<11){alert('请输入正确的手机号');return;}var btn=this;btn.disabled=true;btn.text_w&&btn.text_w.set_otext('发送中...');fetch('{{sms_code_url}}?_webbricks_=1&cellphone='+encodeURIComponent(cell)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){var w=form.name_inputs['codeid'];if(w)w.setValue(d.data.key);btn.text_w&&btn.text_w.set_otext('已发送');var s=60;var t=setInterval(function(){s--;if(s<=0){clearInterval(t);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('重新发送')}else btn.text_w&&btn.text_w.set_otext(s+'s')},1000)}else{alert(d.data.message||'发送验证码出错');btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')}}).catch(function(e){alert('网络错误: '+e);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')})"
+                                            "widgettype": "Text",
+                                            "options": {
+                                                "otext": "未注册的手机号将自动创建账号",
+                                                "i18n": true,
+                                                "css": "login-desc"
+                                            }
+                                        },
+                                        {
+                                            "widgettype": "Form",
+                                            "id": "phone_form",
+                                            "options": {
+                                                "cols": 1,
+                                                "fields": [
+                                                    {"name": "cell_no", "label": "手机号", "uitype": "str"},
+                                                    {"name": "codeid", "uitype": "hide", "value": ""},
+                                                    {"name": "check_code", "label": "验证码", "uitype": "str"}
+                                                ]
+                                            },
+                                            "binds": [
+                                                {
+                                                    "wid": "self",
+                                                    "event": "submit",
+                                                    "actiontype": "urlwidget",
+                                                    "target": "self",
+                                                    "options": {
+                                                        "method": "POST",
+                                                        "url": "{{code_login_url}}"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "widgettype": "Button",
+                                            "id": "gen_code_btn",
+                                            "options": {"label": "发送验证码", "i18n": true, "css": "sms-send-btn"},
+                                            "binds": [
+                                                {
+                                                    "wid": "self",
+                                                    "event": "click",
+                                                    "actiontype": "script",
+                                                    "target": "self",
+                                                    "script": "var form=bricks.getWidgetById('phone_form',bricks.app);if(!form)return;var cell=form._getValue().cell_no;if(!cell||cell.length<11){alert('请输入正确的手机号');return;}var btn=this;btn.disabled=true;btn.text_w&&btn.text_w.set_otext('发送中...');fetch('{{sms_code_url}}?_webbricks_=1&cellphone='+encodeURIComponent(cell)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){var w=form.name_inputs['codeid'];if(w)w.setValue(d.data.key);btn.text_w&&btn.text_w.set_otext('已发送');var s=60;var t=setInterval(function(){s--;if(s<=0){clearInterval(t);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('重新发送')}else btn.text_w&&btn.text_w.set_otext(s+'s')},1000)}else{alert(d.data.message||'发送验证码出错');btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')}}).catch(function(e){alert('网络错误: '+e);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')})"
+                                                }
+                                            ]
                                         }
                                     ]
                                 }
@@ -107,47 +121,61 @@
                         "name": "register",
                         "label": "注册账号",
                         "content": {
-                            "widgettype": "VBox",
-                            "options": {"gap": "8px"},
+                            "widgettype": "VScrollPanel",
+                            "options": {"height": "100%"},
                             "subwidgets": [
                                 {
-                                    "widgettype": "Form",
-                                    "id": "register_form",
-                                    "options": {
-                                        "cols": 1,
-                                        "fields": [
-                                            {"name": "username", "label": "用户名", "uitype": "str"},
-                                            {"name": "mobile", "label": "手机号", "uitype": "str"},
-                                            {"name": "codeid", "uitype": "hide", "value": ""},
-                                            {"name": "check_code", "label": "短信验证码", "uitype": "str"},
-                                            {"name": "password", "label": "密码", "uitype": "password"},
-                                            {"name": "cfm_password", "label": "确认密码", "uitype": "password"}
-                                        ]
-                                    },
-                                    "binds": [
+                                    "widgettype": "VBox",
+                                    "options": {"gap": "8px"},
+                                    "subwidgets": [
                                         {
-                                            "wid": "self",
-                                            "event": "submit",
-                                            "actiontype": "urlwidget",
-                                            "target": "self",
+                                            "widgettype": "Text",
                                             "options": {
-                                                "method": "POST",
-                                                "url": "{{sms_register_url}}"
+                                                "otext": "手机号需短信验证后方可注册",
+                                                "i18n": true,
+                                                "css": "login-desc"
                                             }
-                                        }
-                                    ]
-                                },
-                                {
-                                    "widgettype": "Button",
-                                    "id": "reg_sms_btn",
-                                    "options": {"label": "发送验证码", "css": "sms-send-btn"},
-                                    "binds": [
+                                        },
                                         {
-                                            "wid": "self",
-                                            "event": "click",
-                                            "actiontype": "script",
-                                            "target": "self",
-                                            "script": "var form=bricks.getWidgetById('register_form',bricks.app);if(!form)return;var cell=form._getValue().mobile;if(!cell||cell.length<11){alert('请输入正确的手机号');return;}var btn=this;btn.disabled=true;btn.text_w&&btn.text_w.set_otext('发送中...');fetch('{{sms_code_url}}?_webbricks_=1&cellphone='+encodeURIComponent(cell)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){var w=form.name_inputs['codeid'];if(w)w.setValue(d.data.key);btn.text_w&&btn.text_w.set_otext('已发送');var s=60;var t=setInterval(function(){s--;if(s<=0){clearInterval(t);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('重新发送')}else btn.text_w&&btn.text_w.set_otext(s+'s')},1000)}else{alert(d.data.message||'发送验证码出错');btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')}}).catch(function(e){alert('网络错误: '+e);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')})"
+                                            "widgettype": "Form",
+                                            "id": "register_form",
+                                            "options": {
+                                                "cols": 1,
+                                                "fields": [
+                                                    {"name": "username", "label": "用户名", "uitype": "str"},
+                                                    {"name": "mobile", "label": "手机号", "uitype": "str"},
+                                                    {"name": "codeid", "uitype": "hide", "value": ""},
+                                                    {"name": "check_code", "label": "短信验证码", "uitype": "str"},
+                                                    {"name": "password", "label": "密码", "uitype": "password"},
+                                                    {"name": "cfm_password", "label": "确认密码", "uitype": "password"}
+                                                ]
+                                            },
+                                            "binds": [
+                                                {
+                                                    "wid": "self",
+                                                    "event": "submit",
+                                                    "actiontype": "urlwidget",
+                                                    "target": "self",
+                                                    "options": {
+                                                        "method": "POST",
+                                                        "url": "{{sms_register_url}}"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "widgettype": "Button",
+                                            "id": "reg_sms_btn",
+                                            "options": {"label": "发送验证码", "i18n": true, "css": "sms-send-btn"},
+                                            "binds": [
+                                                {
+                                                    "wid": "self",
+                                                    "event": "click",
+                                                    "actiontype": "script",
+                                                    "target": "self",
+                                                    "script": "var form=bricks.getWidgetById('register_form',bricks.app);if(!form)return;var cell=form._getValue().mobile;if(!cell||cell.length<11){alert('请输入正确的手机号');return;}var btn=this;btn.disabled=true;btn.text_w&&btn.text_w.set_otext('发送中...');fetch('{{sms_code_url}}?_webbricks_=1&cellphone='+encodeURIComponent(cell)).then(function(r){return r.json()}).then(function(d){if(d.status==='ok'){var w=form.name_inputs['codeid'];if(w)w.setValue(d.data.key);btn.text_w&&btn.text_w.set_otext('已发送');var s=60;var t=setInterval(function(){s--;if(s<=0){clearInterval(t);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('重新发送')}else btn.text_w&&btn.text_w.set_otext(s+'s')},1000)}else{alert(d.data.message||'发送验证码出错');btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')}}).catch(function(e){alert('网络错误: '+e);btn.disabled=false;btn.text_w&&btn.text_w.set_otext('发送验证码')})"
+                                                }
+                                            ]
                                         }
                                     ]
                                 }
