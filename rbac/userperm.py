@@ -237,7 +237,9 @@ class UserPermissions:
 			if _cache_enabled('rbac') and self.rp_caches is not None and (now - self.rp_cache_loaded_at) < self.rp_cache_ttl:
 				return
 			
-			self.rp_caches = {}
+			# Build in local dict first, assign atomically when complete.
+			# Otherwise other coroutines see {} during the await and get 403.
+			new_caches = {}
 			sql_all = """select c.id, c.orgtypeid, c.name, b.path 
 from rolepermission a, permission b, role c
 where a.permid = b.id
@@ -253,9 +255,11 @@ order by c.orgtypeid, c.name"""
 					k = 'logined'
 				else:
 					k = f'{r.orgtypeid}.{r.name}'
-				arr = self.rp_caches.get(k, [])
+				arr = new_caches.get(k, [])
 				arr.append(r.path)
-				self.rp_caches[k] = arr
+				new_caches[k] = arr
+			# Atomic swap: other coroutines see old cache or fully-loaded new cache, never {}
+			self.rp_caches = new_caches
 			self.rp_cache_loaded_at = now
 	
 	async def get_userroles(self, sor, userid):
