@@ -49,6 +49,7 @@ PATHS_ANY = [
     f"/rbac/user/logout.dspy",
     f"/rbac/user/register.dspy",
     f"/rbac/user/register.ui",
+    f"/rbac/user/sms_register.dspy",
     f"/rbac/user/reset_password/index.ui",
     f"/rbac/user/reset_password/reset_password.dspy",
     f"/rbac/user/up_login.dspy",
