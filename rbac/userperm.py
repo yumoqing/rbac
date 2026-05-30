@@ -329,10 +329,10 @@ where a.id = c.userid
 		if userid is None:
 			roles = ['any', 'anonymous']
 		
-		if self.rp_caches is None or not roles:
+		if not _cache_enabled('rbac') or self.rp_caches is None or not roles:
 			env = ServerEnv()
 			async with get_sor_context(env, 'rbac') as sor:
-				if self.rp_caches is None:
+				if not _cache_enabled('rbac') or self.rp_caches is None:
 					await self.load_roleperms(sor)
 				if not roles:
 					roles = await self.get_userroles(sor, userid)
