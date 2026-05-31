@@ -18,6 +18,13 @@ except Exception as e:
 			"message": f"发送验证码出错: {e}"
 		}
 	}
+if xx is None:
+	return {
+		"status": "error",
+		"data": {
+			"message": "发送验证码出错，请检查短信模板配置和百度API连接"
+		}
+	}
 id, code = xx
 debug(f'{id=},{code=}')
 return {
