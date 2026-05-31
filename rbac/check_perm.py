@@ -119,7 +119,13 @@ async def register_user(sor, ns):
 	ns.login_fail_count = 0
 	ns1 = DictObject(id=id, orgname=ns.username)
 	await create_org(sor, ns1)
-	await create_user(sor, ns)
+	roles = [
+		{
+			'orgtypeid': 'customer',
+			'roles': ['customer', 'admin']
+		}
+	]
+	await create_user(sor, ns, roles)
 	return {
 		"status": "ok",
 		"data": {

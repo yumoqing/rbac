@@ -1,7 +1,7 @@
 {
     "widgettype": "VBox",
     "options": {
-        "cheight": 40,
+        "css": "filler", "height": "100%",
         "width": "100%"
     },
     "subwidgets": [
