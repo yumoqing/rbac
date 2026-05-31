@@ -96,6 +96,8 @@ PATHS_LOGINED = [
     f"/rbac/user/userapikey/index.ui",
     f"/rbac/user/userapikey/update_userapikey.dspy",
     f"/rbac/user/userinfo.ui",
+    f"/rbac/user/edit_profile.dspy",
+    f"/rbac/user/save_profile.dspy",
     f"/rbac/user/wechat_login.ui",
     f"/rbac/userapp",
     f"/rbac/userdepartment",

@@ -1,0 +1,90 @@
+debug(f'edit_profile.dspy: {params_kw=}')
+
+userid = await get_user()
+if userid is None:
+	return UiError(title='Error', message='You need login first')
+
+db = DBPools()
+dbname = get_module_dbname('rbac')
+async with db.sqlorContext(dbname) as sor:
+	recs = await sor.R('users', {'id': userid})
+	if not recs:
+		return UiError(title='Error', message='User not found')
+	user = recs[0]
+	nick_name = user.nick_name or ''
+	email = user.email or ''
+	mobile = user.mobile or ''
+	address = user.address or ''
+
+return {
+	"widgettype": "PopupWindow",
+	"options": {
+		"cwidth": 22,
+		"height": "75%",
+		"archor": "cc",
+		"auto_open": True
+	},
+	"subwidgets": [
+		{
+			"widgettype": "Form",
+			"options": {
+				"title": "完善个人信息",
+				"description": "请填写或更新您的个人信息",
+				"fields": [
+					{
+						"name": "nick_name",
+						"type": "str",
+						"length": 255,
+						"uitype": "str",
+						"datatype": "str",
+						"required": False,
+						"label": "显示名",
+						"default": nick_name
+					},
+					{
+						"name": "email",
+						"type": "str",
+						"length": 255,
+						"uitype": "email",
+						"datatype": "str",
+						"required": False,
+						"label": "邮件地址",
+						"default": email
+					},
+					{
+						"name": "mobile",
+						"type": "str",
+						"length": 255,
+						"uitype": "tel",
+						"datatype": "str",
+						"required": False,
+						"label": "手机号",
+						"default": mobile
+					},
+					{
+						"name": "address",
+						"type": "str",
+						"length": 255,
+						"uitype": "str",
+						"datatype": "str",
+						"required": False,
+						"label": "地址",
+						"default": address
+					}
+				]
+			},
+			"binds": [
+				{
+					"wid": "self",
+					"event": "submit",
+					"actiontype": "urlwidget",
+					"target": "self",
+					"options": {
+						"method": "POST",
+						"url": entire_url('save_profile.dspy')
+					}
+				}
+			]
+		}
+	]
+}

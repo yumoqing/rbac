@@ -33,6 +33,11 @@
 				"url":"{{entire_url('user/myrole.ui')}}"
 			},
 			{
+				"name":"editprofile",
+				"label":"完善信息",
+				"url":"{{entire_url('user/edit_profile.dspy')}}"
+			},
+			{
 				"name":"logout",
 				"label":"签退",
 				"url":"{{entire_url('user/logout.dspy')}}"

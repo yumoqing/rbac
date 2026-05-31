@@ -1,0 +1,40 @@
+debug(f'save_profile.dspy: {params_kw=}')
+
+userid = await get_user()
+if userid is None:
+	return UiError(title='Error', message='You need login first')
+
+data = {
+	'id': userid,
+	'nick_name': params_kw.nick_name or '',
+	'email': params_kw.email or '',
+	'mobile': params_kw.mobile or '',
+	'address': params_kw.address or ''
+}
+
+db = DBPools()
+dbname = get_module_dbname('rbac')
+try:
+	async with db.sqlorContext(dbname) as sor:
+		await sor.U('users', data)
+		return {
+			"widgettype": "Message",
+			"options": {
+				"timeout": 3,
+				"auto_open": True,
+				"title": "保存成功",
+				"message": "个人信息已更新"
+			},
+			"binds": [
+				{
+					"wid": "self",
+					"event": "dismissed",
+					"actiontype": "script",
+					"target": "self",
+					"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('profile_updated')"
+				}
+			]
+		}
+except Exception as e:
+	exception(f'save_profile error: {e}')
+	return UiError(title='Error', message=f'保存失败: {e}')
