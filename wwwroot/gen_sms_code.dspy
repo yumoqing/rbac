@@ -7,12 +7,15 @@ if phone is None:
 		}
 	}
 # 使用短信模块发布的sms_engine实例生成验证码，参数手机号
-xx = await sms_engine.generate_sms_code(phone)
-if xx is None:
+try:
+	xx = await sms_engine.generate_sms_code(phone)
+except Exception as e:
+	debug(f'gen_sms_code error: {e}')
+	exception(f'gen_sms_code error for {phone}: {e}')
 	return {
 		"status": "error",
 		"data": {
-			"message": "发送验证码出错"
+			"message": f"发送验证码出错: {e}"
 		}
 	}
 id, code = xx
