@@ -98,6 +98,11 @@ class UserPermissions:
 		# Async lock for rp_caches initialization (lazy init)
 		self._rp_lock = None
 
+	def on_hot_reload(self, data=None):
+		"""Event handler for hot_reload event. Clears all caches."""
+		self.ur_caches.clear()
+		self.invalidate_rp_cache()
+
 	def on_user_update(self, data):
 		"""Event handler for users table update.
 		Clears the specific user's permission cache.

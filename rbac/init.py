@@ -107,4 +107,7 @@ def load_rbac():
 	env.invalidate_user_perm_cache = env.userpermissions.invalidate_user_cache
 	env.invalidate_all_perm_caches = env.userpermissions.invalidate_all_user_caches
 	env.invalidate_role_perm_cache = env.userpermissions.invalidate_rp_cache
+	# Bind hot_reload event — instance method, WeakMethod safe (stored on env)
+	if hasattr(env, 'event_dispatcher'):
+		env.event_dispatcher.bind('hot_reload', env.userpermissions.on_hot_reload)
 	register_rbac_event_listeners()
