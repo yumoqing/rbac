@@ -29,7 +29,7 @@ def _get_rbac_dbname():
 
 async def on_rbac_role_event(data):
 	"""role 表变更后，全量失效 rp_caches"""
-	up = UserPermissions()
+	up = ServerEnv().userpermissions
 	up.invalidate_rp_cache()
 
 
@@ -37,7 +37,7 @@ async def on_rbac_userrole_event(data):
 	"""userrole 表变更后，精确失效对应用户的 ur_caches"""
 	ns = data.get('ns', {})
 	userid = ns.get('userid')
-	up = UserPermissions()
+	up = ServerEnv().userpermissions
 	if userid:
 		up.invalidate_user_cache(userid)
 	else:
@@ -46,13 +46,13 @@ async def on_rbac_userrole_event(data):
 
 async def on_rbac_permission_event(data):
 	"""permission 表变更后，全量失效 rp_caches"""
-	up = UserPermissions()
+	up = ServerEnv().userpermissions
 	up.invalidate_rp_cache()
 
 
 async def on_rbac_rolepermission_event(data):
 	"""rolepermission 表变更后，全量失效 rp_caches"""
-	up = UserPermissions()
+	up = ServerEnv().userpermissions
 	up.invalidate_rp_cache()
 
 
