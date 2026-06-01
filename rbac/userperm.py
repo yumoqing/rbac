@@ -100,6 +100,8 @@ class UserPermissions:
 
 	def on_hot_reload(self, data=None):
 		"""Event handler for hot_reload event. Clears all caches."""
+		from appPublic.log import debug
+		debug(f'[rbac] on_hot_reload called, clearing caches (data={data})')
 		self.ur_caches.clear()
 		self.invalidate_rp_cache()
 
