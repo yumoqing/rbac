@@ -67,7 +67,7 @@
         {
             "name": "created_at",
             "title": "注册日期",
-            "type": "timestamp"
+            "type": "date"
         },
         {
             "name": "last_login",
