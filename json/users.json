@@ -10,7 +10,7 @@
             "cwidth": {}
         },
         "editexclouded": [
-            "id", "nick_name", "orgid"
+            "id", "nick_name", "orgid", "last_login_fail", "last_login", "sync_from"
         ],
         "subtables": [
 			{
