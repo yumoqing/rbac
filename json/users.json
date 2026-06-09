@@ -17,11 +17,6 @@
 				"field":"userid",
 				"title":"用户角色",
 				"subtable":"userrole"
-			},
-			{
-				"field":"userid",
-				"title":"APIKEY",
-				"subtable":"userapp"
 			}
 		]
     }
