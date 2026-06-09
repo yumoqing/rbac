@@ -16,6 +16,14 @@
         },  
         "binds":[
         ]   
-    }   
+    },
+        "subtables":[
+	            {
+                "field":"permid",
+                "title":"权限角色",
+                "subtable":"rolepermission"
+            }
+		]
+
 
 }
