@@ -11,11 +11,7 @@
             "alters":{}
         },  
         "edit_exclouded_fields":[],
-        "parentField":"parentid",
-        "toolbar":{
-        },  
-        "binds":[
-        ]   
+        "parentField":"parentid"
     },
         "subtables":[
 	            {
