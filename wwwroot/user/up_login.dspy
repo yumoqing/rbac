@@ -90,29 +90,22 @@ async with db.sqlorContext(dbname) as sor:
 			"message":f"{r[0].username} Welcome back"
 		},
 		"binds":[
-			{
-				"wid":"self",
-				"event":"dismissed",
-				"actiontype":"urlwidget",
-				"target":"window.user_container",
-				"options":{
-					"url":entire_url('/rbac/user/userinfo.ui')
-				}
-			},
-			{
-				"wid":"self",
-				"event":"dismissed",
-				"actiontype":"script",
-				"target": f'body.login_window',
-				"script":"this.destroy()"
-			},
-			{
-				"wid":"self",
-				"event":"dismissed",
-				"actiontype":"script",
-				"target":"self",
-				"script":"if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
+		{
+			"wid":"self",
+			"event":"dismissed",
+			"actiontype":"urlwidget",
+			"target":"window",
+			"options":{
+				"url":entire_url('/index.ui')
 			}
+		},
+		{
+			"wid":"self",
+			"event":"opened",
+			"actiontype":"script",
+			"target":"window.login_window",
+			"script":"this.destroy()"
+		}
 		]
 	}
 return {
