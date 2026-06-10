@@ -12,6 +12,10 @@ async with db.sqlorContext(dbname) as sor:
 	r = await sor.sqlExe('select * from users where username=${username}$', ns.copy())
 	if len(r) == 0:
 		return {
+			"status": "error",
+			"data": {
+				"message": "user name or password error"
+			},
 			"widgettype":"Error",
 			"options":{
 				"timeout":3,
@@ -30,6 +34,10 @@ async with db.sqlorContext(dbname) as sor:
 			elapsed = (datetime.datetime.now() - stored).total_seconds()
 			if elapsed < 300:
 				return {
+			"status": "error",
+			"data": {
+				"message": "Account locked due to too many failed login attempts. Please try again in 5 minutes."
+			},
 					"widgettype":"Error",
 					"options":{
 						"timeout":5,
@@ -64,6 +72,10 @@ async with db.sqlorContext(dbname) as sor:
 		else:
 			msg = f"user name or password error ({3 - new_fail_count} attempts remaining)"
 		return {
+			"status": "error",
+			"data": {
+				"message": msg
+			},
 			"widgettype":"Error",
 			"options":{
 				"timeout":3,
@@ -81,6 +93,8 @@ async with db.sqlorContext(dbname) as sor:
 	""", {'id': user.id, 'now': now_str})
 	await remember_user(r[0].id, username=r[0].username, userorgid=r[0].orgid)
 	return {
+		"status": "ok",
+		"data": r[0],
 		"widgettype":"Message",
 		"options":{
 			"timeout":3,
@@ -109,6 +123,11 @@ async with db.sqlorContext(dbname) as sor:
 		]
 	}
 return {
+			"status": "error",
+			"data": {
+				"message": "system error"
+			},
+
 	"widgettype":"Error",
 	"options":{
 		"timeout":3,
