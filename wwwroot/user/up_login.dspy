@@ -94,7 +94,7 @@ async with db.sqlorContext(dbname) as sor:
 	await remember_user(r[0].id, username=r[0].username, userorgid=r[0].orgid)
 	return {
 		"status": "ok",
-		"data": r[0],
+		"data": { "user": r[0]},
 		"widgettype":"Message",
 		"options":{
 			"timeout":3,
