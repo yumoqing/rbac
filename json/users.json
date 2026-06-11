@@ -9,8 +9,28 @@
             "exclouded": ["id", "password", "orgid", "nick_name" ],
             "cwidth": {}
         },
-        "editexclouded": [
-            "id", "nick_name", "orgid", "last_login_fail", "last_login", "sync_from"
+        "editexclouded": ["id", "nick_name", "orgid", "last_login_fail", "last_login", "sync_from", "login_fail_count", "created_at"],
+        "record_toolbar": [
+            {
+                "label": "启用",
+                "actiontype": "dspy",
+                "url": "/rbac/users/enable_user.dspy",
+                "options": {
+                    "icon": "check",
+                    "cwidth": 16,
+                    "cheight": 9
+                }
+            },
+            {
+                "label": "禁用",
+                "actiontype": "dspy",
+                "url": "/rbac/users/disable_user.dspy",
+                "options": {
+                    "icon": "block",
+                    "cwidth": 16,
+                    "cheight": 9
+                }
+            }
         ],
         "subtables": [
 			{

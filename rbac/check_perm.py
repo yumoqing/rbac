@@ -158,6 +158,11 @@ async def checkUserPassword(request, username, password):
 			return False
 		
 		user = recs[0]
+		# Check user status (disabled)
+		user_status = getattr(user, 'user_status', '0') or '0'
+		if user_status != '0':
+			debug(f'User {username} is disabled (status={user_status})')
+			return False
 		fail_count = getattr(user, 'login_fail_count', 0) or 0
 		last_fail = getattr(user, 'last_login_fail', None)
 		
@@ -209,6 +214,11 @@ async def basic_auth(sor, request):
 		return None
 	# Check lockout in Python layer (DB-agnostic)
 	user = recs[0]
+	# Check user status (disabled)
+	user_status = getattr(user, 'user_status', '0') or '0'
+	if user_status != '0':
+		debug(f'User {username} is disabled (status={user_status}) via basic auth')
+		return None
 	fail_count = getattr(user, 'login_fail_count', 0) or 0
 	last_fail = getattr(user, 'last_login_fail', None)
 	if _is_locked(fail_count, last_fail):

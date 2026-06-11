@@ -1,0 +1,8 @@
+if not params_kw.get('id'):
+	return {"widgettype":"Error","options":{"title":"Error","message":"no user selected","cwidth":16,"cheight":9,"timeout":3}}
+
+dbname = get_module_dbname('rbac')
+db = DBPools()
+async with db.sqlorContext(dbname) as sor:
+	await sor.U('users', {'id': params_kw.id, 'user_status': '0', 'login_fail_count': 0})
+	return {"widgettype":"Message","options":{"title":"Success","message":"user enabled","cwidth":16,"cheight":9,"timeout":3}}
