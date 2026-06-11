@@ -5,7 +5,7 @@ import subprocess
 
 MOD = "rbac"
 
-# any — 无需登录（登录页、注册、验证码等）
+# any — 无需登录（登录页、注册、验证码、公共资源等）
 PATHS_ANY = [
     f"/{MOD}/admin_menu.ui",
     f"/{MOD}/gen_sms_code.dspy",
@@ -23,6 +23,9 @@ PATHS_ANY = [
     f"/{MOD}/usermenu.ui",
     f"/{MOD}/userpassword_login.dspy",
     f"/{MOD}/userpassword_login.ui",
+    # 公共资源
+    "/favicon.ico",
+    "/i18n_getmsgs",
 ]
 
 # logined — 需要认证的页面和 API
