@@ -9,6 +9,7 @@ MOD = "rbac"
 PATHS_ANY = [
     f"/{MOD}/admin_menu.ui",
     f"/{MOD}/gen_sms_code.dspy",
+    f"/{MOD}/login.css",
     f"/{MOD}/phone_login.dspy",
     f"/{MOD}/qr_scan.ui",
     f"/{MOD}/user/code_login.dspy",
