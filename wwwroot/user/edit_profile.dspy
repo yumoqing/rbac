@@ -17,74 +17,63 @@ async with db.sqlorContext(dbname) as sor:
 	address = user.address or ''
 
 return {
-	"widgettype": "PopupWindow",
+	"widgettype": "Form",
 	"options": {
-		"cwidth": 22,
-		"height": "75%",
-		"archor": "cc",
-		"auto_open": True
-	},
-	"subwidgets": [
-		{
-			"widgettype": "Form",
-			"options": {
-				"title": "完善个人信息",
-				"description": "请填写或更新您的个人信息",
-				"fields": [
-					{
-						"name": "nick_name",
-						"type": "str",
-						"length": 255,
-						"uitype": "str",
-						"datatype": "str",
-						"required": False,
-						"label": "显示名",
-						"value": nick_name
-					},
-					{
-						"name": "email",
-						"type": "str",
-						"length": 255,
-						"uitype": "email",
-						"datatype": "str",
-						"required": False,
-						"label": "邮件地址",
-						"value": email
-					},
-					{
-						"name": "mobile",
-						"type": "str",
-						"length": 255,
-						"uitype": "tel",
-						"datatype": "str",
-						"required": False,
-						"label": "手机号",
-						"value": mobile
-					},
-					{
-						"name": "address",
-						"type": "str",
-						"length": 255,
-						"uitype": "str",
-						"datatype": "str",
-						"required": False,
-						"label": "地址",
-						"value": address
-					}
-				]
+		"title": "完善个人信息",
+		"description": "请填写或更新您的个人信息",
+		"fields": [
+			{
+				"name": "nick_name",
+				"type": "str",
+				"length": 255,
+				"uitype": "str",
+				"datatype": "str",
+				"required": False,
+				"label": "显示名",
+				"value": nick_name
 			},
-			"binds": [
-				{
-					"wid": "self",
-					"event": "submit",
-					"actiontype": "urlwidget",
-					"target": "self",
-					"options": {
-						"method": "POST",
-						"url": entire_url('save_profile.dspy')
-					}
-				}
-			]
+			{
+				"name": "email",
+				"type": "str",
+				"length": 255,
+				"uitype": "email",
+				"datatype": "str",
+				"required": False,
+				"label": "邮件地址",
+				"value": email
+			},
+			{
+				"name": "mobile",
+				"type": "str",
+				"length": 255,
+				"uitype": "tel",
+				"datatype": "str",
+				"required": False,
+				"label": "手机号",
+				"value": mobile
+			},
+			{
+				"name": "address",
+				"type": "str",
+				"length": 255,
+				"uitype": "str",
+				"datatype": "str",
+				"required": False,
+				"label": "地址",
+				"value": address
+			}
+		]
+	},
+	"binds": [
+		{
+			"wid": "self",
+			"event": "submit",
+			"actiontype": "urlwidget",
+			"target": "self",
+			"options": {
+				"method": "POST",
+				"url": entire_url('save_profile.dspy')
+			}
 		}
 	]
 }

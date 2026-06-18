@@ -35,7 +35,12 @@
 			{
 				"name":"editprofile",
 				"label":"完善信息",
-				"url":"{{entire_url('user/edit_profile.dspy')}}"
+				"url":"{{entire_url('user/edit_profile.dspy')}}",
+				"popup_options":{
+					"title":"完善个人信息",
+					"cwidth":22,
+					"height":"75%"
+				}
 			},
 			{
 				"name":"logout",
