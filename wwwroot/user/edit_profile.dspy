@@ -39,7 +39,7 @@ return {
 						"datatype": "str",
 						"required": False,
 						"label": "显示名",
-						"default": nick_name
+						"value": nick_name
 					},
 					{
 						"name": "email",
@@ -49,7 +49,7 @@ return {
 						"datatype": "str",
 						"required": False,
 						"label": "邮件地址",
-						"default": email
+						"value": email
 					},
 					{
 						"name": "mobile",
@@ -59,7 +59,7 @@ return {
 						"datatype": "str",
 						"required": False,
 						"label": "手机号",
-						"default": mobile
+						"value": mobile
 					},
 					{
 						"name": "address",
@@ -69,7 +69,7 @@ return {
 						"datatype": "str",
 						"required": False,
 						"label": "地址",
-						"default": address
+						"value": address
 					}
 				]
 			},
