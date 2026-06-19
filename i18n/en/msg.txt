@@ -1,0 +1,133 @@
+用户管理: User Management
+用户名: Username
+密码: Password
+确认密码: Confirm Password
+姓名: Full Name
+邮箱: Email
+手机号: Phone Number
+所属机构: Organization
+角色: Role
+状态: Status
+启用: Enable
+停用: Disable
+新增用户: Add User
+编辑用户: Edit User
+删除用户: Delete User
+重置密码: Reset Password
+角色管理: Role Management
+角色名称: Role Name
+角色编码: Role Code
+角色描述: Role Description
+权限: Permission
+新增角色: Add Role
+编辑角色: Edit Role
+删除角色: Delete Role
+分配权限: Assign Permission
+机构管理: Organization Management
+机构名称: Organization Name
+机构编码: Organization Code
+机构类型: Organization Type
+上级机构: Parent Organization
+新增机构: Add Organization
+编辑机构: Edit Organization
+删除机构: Delete Organization
+菜单管理: Menu Management
+菜单名称: Menu Name
+菜单路径: Menu Path
+菜单图标: Menu Icon
+菜单排序: Menu Sort Order
+上级菜单: Parent Menu
+新增菜单: Add Menu
+编辑菜单: Edit Menu
+删除菜单: Delete Menu
+权限管理: Permission Management
+权限名称: Permission Name
+权限编码: Permission Code
+权限类型: Permission Type
+资源权限: Resource Permission
+操作权限: Operation Permission
+数据权限: Data Permission
+登录日志: Login Log
+登录时间: Login Time
+登录IP: Login IP
+登录状态: Login Status
+成功: Success
+失败: Failed
+操作日志: Operation Log
+操作类型: Operation Type
+操作时间: Operation Time
+操作人: Operator
+操作结果: Operation Result
+API密钥管理: API Key Management
+密钥名称: Key Name
+密钥值: Key Value
+密钥状态: Key Status
+新增密钥: Add Key
+编辑密钥: Edit Key
+删除密钥: Delete Key
+在线用户: Online Users
+会话ID: Session ID
+最后活动时间: Last Activity Time
+强制下线: Force Logout
+安全设置: Security Settings
+密码策略: Password Policy
+密码长度: Password Length
+密码复杂度: Password Complexity
+密码有效期: Password Expiry
+登录失败锁定: Login Failure Lock
+最大失败次数: Max Failed Attempts
+锁定时长: Lock Duration
+双因素认证: Two-Factor Authentication
+启用双因素: Enable 2FA
+验证码: Verification Code
+Token管理: Token Management
+Token名称: Token Name
+Token过期时间: Token Expiry Time
+新增Token: Add Token
+编辑Token: Edit Token
+删除Token: Delete Token
+刷新Token: Refresh Token
+用户组: User Group
+组名称: Group Name
+组描述: Group Description
+新增用户组: Add User Group
+编辑用户组: Edit User Group
+删除用户组: Delete User Group
+成员管理: Member Management
+添加成员: Add Member
+移除成员: Remove Member
+搜索: Search
+名称或编码: Name or Code
+操作: Action
+描述: Description
+类型: Type
+名称: Name
+编码: Code
+备注: Remarks
+创建时间: Created Time
+更新时间: Updated Time
+新增: Add
+保存: Save
+取消: Cancel
+确认: Confirm
+删除: Delete
+编辑: Edit
+查看: View
+导出: Export
+打印: Print
+刷新: Refresh
+返回: Back
+提交: Submit
+重置: Reset
+Conform: Conform
+Discard: Discard
+Submit: Submit
+Reset: Reset
+Cancel: Cancel
+全部: All
+日期: Date
+管理员: Administrator
+普通用户: Normal User
+只读用户: Read-Only User
+访问控制: Access Control
+最后登录: Last Login
