@@ -209,6 +209,16 @@ try:
 		except Exception as e:
 			exception(f'{e}')
 
+		# 检查是否有促销码，如果有则绑定客户归属关系
+		promo_code_id = params_kw.get('promo_code_id')
+		if promo_code_id:
+			try:
+				_new_orgid = d['data']['user'].orgid
+				await bind_customer(request, DictObject(promo_code_id=promo_code_id, customerid=_new_orgid))
+				debug(f'code_login: customer {_new_orgid} bound via promo_code {promo_code_id}')
+			except Exception as e:
+				exception(f'code_login: bind_customer failed: {e}')
+
 		r = d['data']['user']
 		await remember_user(r.id, username=r.username, userorgid=r.orgid)
 		return {

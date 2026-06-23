@@ -130,6 +130,15 @@ try:
 		except Exception as e:
 			exception(f'{e},{orgid=}')
 
+		# 检查是否有促销码，如果有则绑定客户归属关系
+		promo_code_id = params_kw.get('promo_code_id')
+		if promo_code_id:
+			try:
+				await bind_customer(request, DictObject(promo_code_id=promo_code_id, customerid=orgid))
+				debug(f'sms_register: customer {orgid} bound via promo_code {promo_code_id}')
+			except Exception as e:
+				exception(f'sms_register: bind_customer failed for {orgid} via {promo_code_id}: {e}')
+
 		# 注册成功后自动登录
 		await remember_user(user.id, username=user.username, userorgid=user.orgid)
 		return {
