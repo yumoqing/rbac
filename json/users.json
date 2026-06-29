@@ -2,6 +2,8 @@
     "tblname": "users",
 	"title":"用户",
     "params": {
+        "new_data_url": "{{entire_url('/rbac/api/add_user.dspy')}}",
+        "update_data_url": "{{entire_url('/rbac/api/update_user.dspy')}}",
 		"sortby":"username",
 		"confidential_fields":["password"],
 		"logined_userorgid":"orgid",
