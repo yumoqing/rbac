@@ -77,6 +77,8 @@ PATHS_LOGINED = [
     f"/{MOD}/users",
     f"/{MOD}/usersync",
     f"/{MOD}/usersync/index.dspy",
+    f"/{MOD}/api/add_user.dspy",
+    f"/{MOD}/api/update_user.dspy",
 ]
 
 
