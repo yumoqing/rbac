@@ -3,7 +3,6 @@ ns = params_kw.copy()
 for k,v in ns.items():
 	if v == 'NaN' or v == 'null':
 		ns[k] = None
-# remove _text suffix fields sent by Tabular (not real DB columns)
 for k in list(ns.keys()):
 	if k.endswith('_text'):
 		ns.pop(k, None)
@@ -19,40 +18,15 @@ ns['created_at'] = curDateString()
 
 userorgid = await get_userorgid()
 if not userorgid:
-	return {
-		"widgettype":"Error",
-		"options":{
-			"title":"Authorization Error",
-			"timeout":3,
-			"cwidth":16,
-			"cheight":9,
-			"message":"Please login"
-		}
-	}
+	return {"widgettype":"Error","options":{"title":"Authorization Error","timeout":3,"cwidth":16,"cheight":9,"message":"Please login"}}
 ns['orgid'] = userorgid
 
-db = DBPools()
-dbname = get_module_dbname('rbac')
-async with db.sqlorContext(dbname) as sor:
-	r = await sor.C('users', ns.copy())
-	return {
-		"widgettype":"Message",
-		"options":{
-			"cwidth":16,
-			"cheight":9,
-			"title":"Add Success",
-			"timeout":3,
-			"message":"ok"
-		}
-	}
-
-return {
-	"widgettype":"Error",
-	"options":{
-		"title":"Add Error",
-		"cwidth":16,
-		"cheight":9,
-		"timeout":3,
-		"message":"failed"
-	}
-}
+try:
+	db = DBPools()
+	dbname = get_module_dbname('rbac')
+	async with db.sqlorContext(dbname) as sor:
+		r = await sor.C('users', ns.copy())
+		return {"widgettype":"Message","options":{"cwidth":16,"cheight":9,"title":"Add Success","timeout":3,"message":"ok"}}
+except Exception as e:
+	debug(f'add_user error: {format_exc()}')
+	return {"widgettype":"Error","options":{"title":"Add Error","cwidth":16,"cheight":9,"timeout":5,"message":str(e)}}
