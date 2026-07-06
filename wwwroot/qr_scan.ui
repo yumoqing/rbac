@@ -5,14 +5,7 @@
         {
             "wid": "self",
             "event": "recognized",
-            "actiontype": "urlwidget",
-            "target": "PopupWindow",
-            "popup_options": {
-                "title": "扫码结果",
-                "dismiss_events": ["cancel"],
-                "height": "85%",
-                "width": "85%"
-            },
+            "actiontype": "newwindow",
             "options": {
                 "url": "${text}"
             }
