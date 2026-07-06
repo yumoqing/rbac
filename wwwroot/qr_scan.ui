@@ -14,7 +14,7 @@
                 "width": "85%"
             },
             "options": {
-                "url": "${text}$"
+                "url": "${text}"
             }
         },
         {
