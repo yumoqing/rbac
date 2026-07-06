@@ -5,10 +5,9 @@
         {
             "wid": "self",
             "event": "recognized",
-            "actiontype": "newwindow",
-            "options": {
-                "url": "${text}"
-            }
+            "actiontype": "script",
+            "target": "self",
+            "script": "window.open('${text}', '_blank');"
         },
         {
             "wid": "self",
