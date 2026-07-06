@@ -7,7 +7,7 @@
             "event": "recognized",
             "actiontype": "script",
             "target": "self",
-            "script": "window.open('${text}', '_blank');"
+            "script": "if(event && event.params && event.params.text) window.open(event.params.text, '_blank');"
         },
         {
             "wid": "self",
