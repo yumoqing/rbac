@@ -11,186 +11,203 @@ cfm_password = params_kw.cfm_password
 
 # 基本参数校验
 if not username:
-	return {
-		"widgettype": "Error",
-		"options": {
-			"timeout": 3,
-			"title": "注册失败",
-			"message": "请输入用户名"
-		}
-	}
+    return {
+        "widgettype": "Error",
+        "options": {
+            "timeout": 3,
+            "title": "注册失败",
+            "message": "请输入用户名"
+        }
+    }
 if not mobile:
-	return {
-		"widgettype": "Error",
-		"options": {
-			"timeout": 3,
-			"title": "注册失败",
-			"message": "请输入手机号"
-		}
-	}
+    return {
+        "widgettype": "Error",
+        "options": {
+            "timeout": 3,
+            "title": "注册失败",
+            "message": "请输入手机号"
+        }
+    }
 if not password:
-	return {
-		"widgettype": "Error",
-		"options": {
-			"timeout": 3,
-			"title": "注册失败",
-			"message": "请输入密码"
-		}
-	}
+    return {
+        "widgettype": "Error",
+        "options": {
+            "timeout": 3,
+            "title": "注册失败",
+            "message": "请输入密码"
+        }
+    }
 if password != cfm_password:
-	return {
-		"widgettype": "Error",
-		"options": {
-			"timeout": 3,
-			"title": "注册失败",
-			"message": "两次输入的密码不一致"
-		}
-	}
+    return {
+        "widgettype": "Error",
+        "options": {
+            "timeout": 3,
+            "title": "注册失败",
+            "message": "两次输入的密码不一致"
+        }
+    }
 if not key or not sms_code:
-	return {
-		"widgettype": "Error",
-		"options": {
-			"timeout": 3,
-			"title": "注册失败",
-			"message": "请先发送并输入短信验证码"
-		}
-	}
+    return {
+        "widgettype": "Error",
+        "options": {
+            "timeout": 3,
+            "title": "注册失败",
+            "message": "请先发送并输入短信验证码"
+        }
+    }
 
 # 验证短信码
 try:
-	ok = await sms_engine.check_sms_code(key, sms_code)
+    ok = await sms_engine.check_sms_code(key, sms_code)
 except Exception as e:
-	exception(f'sms_register sms check error: {e}')
-	ok = False
+    exception(f'sms_register sms check error: {e}')
+    ok = False
 
 if not ok:
-	return {
-		"widgettype": "Error",
-		"options": {
-			"timeout": 3,
-			"title": "验证失败",
-			"message": "短信验证码错误或已过期，请重新获取"
-		}
-	}
+    return {
+        "widgettype": "Error",
+        "options": {
+            "timeout": 3,
+            "title": "验证失败",
+            "message": "短信验证码错误或已过期，请重新获取"
+        }
+    }
+
+# 根据注册域名查找所属分销商
+parentid = None
+try:
+    host = request.host
+    env = request._run_ns
+    domain_info = await env.get_domain_by_host(request, host)
+    if domain_info:
+        parentid = domain_info.resellerid
+        debug(f'sms_register: domain={host} -> resellerid={parentid}')
+    else:
+        debug(f'sms_register: domain={host} not found in tenant_domain')
+except Exception as e:
+    exception(f'sms_register: domain lookup error: {e}')
 
 # 短信验证通过，注册用户
 db = DBPools()
 dbname = get_module_dbname('rbac')
 try:
-	async with db.sqlorContext(dbname) as sor:
-		# 检查手机号是否已注册
-		existing = await sor.R('users', {'mobile': mobile})
-		if existing:
-			return {
-				"widgettype": "Error",
-				"options": {
-					"timeout": 5,
-					"title": "注册失败",
-					"message": "该手机号已注册，请直接登录"
-				}
-			}
+    async with db.sqlorContext(dbname) as sor:
+        # 检查手机号是否已注册
+        existing = await sor.R('users', {'mobile': mobile})
+        if existing:
+            return {
+                "widgettype": "Error",
+                "options": {
+                    "timeout": 5,
+                    "title": "注册失败",
+                    "message": "该手机号已注册，请直接登录"
+                }
+            }
 
-		# 检查用户名是否已存在
-		existing_user = await sor.R('users', {'username': username})
-		if existing_user:
-			return {
-				"widgettype": "Error",
-				"options": {
-					"timeout": 5,
-					"title": "注册失败",
-					"message": "用户名已被占用"
-				}
-			}
+        # 检查用户名是否已存在
+        existing_user = await sor.R('users', {'username': username})
+        if existing_user:
+            return {
+                "widgettype": "Error",
+                "options": {
+                    "timeout": 5,
+                    "title": "注册失败",
+                    "message": "用户名已被占用"
+                }
+            }
 
-		# 调用注册函数
-		reg_params = DictObject(
-			username=username,
-			mobile=mobile,
-			password=password,
-			cfm_password=cfm_password
-		)
-		data = await register_user(sor, reg_params)
-		data = DictObject(**data)
-		if data.status == 'error':
-			debug(f"sms_register error: {data.data.message}")
-			return {
-				"widgettype": "Error",
-				"options": {
-					"timeout": 5,
-					"title": "注册失败",
-					"message": data.data.message
-				}
-			}
+        # 调用注册函数
+        reg_params = DictObject(
+            username=username,
+            mobile=mobile,
+            password=password,
+            cfm_password=cfm_password
+        )
+        if parentid:
+            reg_params.parentid = parentid
 
-		user = data.data.user
-		orgid = user.orgid
-		try:
-			await openCustomerAccounts(sor, '0', orgid)
-			debug(f'{orgid} accounts opened')
-		except Exception as e:
-			exception(f'{e},{orgid=}')
+        data = await register_user(sor, reg_params)
+        data = DictObject(**data)
+        if data.status == 'error':
+            debug(f"sms_register error: {data.data.message}")
+            return {
+                "widgettype": "Error",
+                "options": {
+                    "timeout": 5,
+                    "title": "注册失败",
+                    "message": data.data.message
+                }
+            }
 
-		# 检查是否有促销码，如果有则绑定客户归属关系
-		promo_code_id = params_kw.get('promo_code_id')
-		if promo_code_id:
-			try:
-				await bind_customer(request, DictObject(promo_code_id=promo_code_id, customerid=orgid))
-				debug(f'sms_register: customer {orgid} bound via promo_code {promo_code_id}')
-			except Exception as e:
-				exception(f'sms_register: bind_customer failed for {orgid} via {promo_code_id}: {e}')
+        user = data.data.user
+        orgid = user.orgid
+        try:
+            await openCustomerAccounts(sor, '0', orgid)
+            debug(f'{orgid} accounts opened')
+        except Exception as e:
+            exception(f'{e},{orgid=}')
 
-		# 注册成功后自动登录
-		await remember_user(user.id, username=user.username, userorgid=user.orgid)
-		return {
-			"widgettype": "Message",
-			"options": {
-				"timeout": 3,
-				"auto_open": True,
-				"title": "注册成功",
-				"message": f"{user.username} 注册成功，已自动登录"
-			},
-			"binds": [
-				{
-					"wid": "self",
-					"event": "dismissed",
-					"actiontype": "urlwidget",
-					"target": "window.user_container",
-					"options": {
-						"url": entire_url('/rbac/user/userinfo.ui')
-					}
-				},
-				{
-					"wid": "self",
-					"event": "dismissed",
-					"actiontype": "script",
-					"target": "body.login_window",
-					"script": "this.destroy()"
-				},
-				{
-					"wid": "self",
-					"event": "dismissed",
-					"actiontype": "script",
-					"target": "self",
-					"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
-				}
-			]
-		}
+        # 检查是否有促销码，如果有则绑定客户归属关系
+        promo_code_id = params_kw.get('promo_code_id')
+        if promo_code_id:
+            try:
+                await bind_customer(request, DictObject(promo_code_id=promo_code_id, customerid=orgid))
+                debug(f'sms_register: customer {orgid} bound via promo_code {promo_code_id}')
+            except Exception as e:
+                exception(f'sms_register: bind_customer failed for {orgid} via {promo_code_id}: {e}')
+
+        # 注册成功后自动登录
+        await remember_user(user.id, username=user.username, userorgid=user.orgid)
+        return {
+            "widgettype": "Message",
+            "options": {
+                "timeout": 3,
+                "auto_open": True,
+                "title": "注册成功",
+                "message": f"{user.username} 注册成功，已自动登录"
+            },
+            "binds": [
+                {
+                    "wid": "self",
+                    "event": "dismissed",
+                    "actiontype": "urlwidget",
+                    "target": "window.user_container",
+                    "options": {
+                        "url": entire_url('/rbac/user/userinfo.ui')
+                    }
+                },
+                {
+                    "wid": "self",
+                    "event": "dismissed",
+                    "actiontype": "script",
+                    "target": "body.login_window",
+                    "script": "this.destroy()"
+                },
+                {
+                    "wid": "self",
+                    "event": "dismissed",
+                    "actiontype": "script",
+                    "target": "self",
+                    "script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
+                }
+            ]
+        }
 except Exception as e:
-	exception(f'sms_register error: {e}')
-	return {
-		"widgettype": "Error",
-		"options": {
-			"timeout": 5,
-			"title": "系统错误",
-			"message": f"注册失败: {e}"
-		}
-	}
+    exception(f'sms_register error: {e}')
+    return {
+        "widgettype": "Error",
+        "options": {
+            "timeout": 5,
+            "title": "系统错误",
+            "message": f"注册失败: {e}"
+        }
+    }
 
 return {
-	"widgettype": "Error",
-	"options": {
-		"timeout": 5,
-		"title": "注册失败",
-		"message": "系统错误，请稍后重试"
-	}
+    "widgettype": "Error",
+    "options": {
+        "timeout": 5,
+        "title": "注册失败",
+        "message": "系统错误，请稍后重试"
+    }
 }

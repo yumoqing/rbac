@@ -118,6 +118,8 @@ async def register_user(sor, ns):
 	ns.created_at = timestampstr()
 	ns.login_fail_count = 0
 	ns1 = DictObject(id=id, orgname=ns.username)
+	if ns.get('parentid'):
+		ns1.parentid = ns.parentid
 	await create_org(sor, ns1)
 	roles = [
 		{

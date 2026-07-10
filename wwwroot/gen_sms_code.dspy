@@ -1,36 +1,40 @@
+# TEST MODE: 不发送真实短信，返回固定验证码 123456
 phone = params_kw.cellphone
 if phone is None:
-	return {
-		"status": "error",
-		"data":{
-			"message": "没有收到手机号"
-		}
-	}
-# 使用短信模块发布的sms_engine实例生成验证码，参数手机号
+    return {
+        "status": "error",
+        "data": {
+            "message": "没有收到手机号"
+        }
+    }
 try:
-	xx = await sms_engine.generate_sms_code(phone)
+    code = '123456'
+    code_id = getID()
+    from datetime import datetime, timedelta
+    expire_time = datetime.now() + timedelta(minutes=5)
+    env = request._run_ns
+    async with get_sor_context(env, 'smssend') as sor:
+        await sor.C('validatecode', {
+            'id': code_id,
+            'vcode': code,
+            'expire_time': expire_time,
+            'del_flg': '0',
+            'create_at': datetime.now()
+        })
+    debug(f'TEST MODE: code_id={code_id}, code={code}, phone={phone}')
+    return {
+        "status": "ok",
+        "data": {
+            "message": f"测试模式: 验证码 {code}",
+            "key": code_id
+        }
+    }
 except Exception as e:
-	debug(f'gen_sms_code error: {e}')
-	exception(f'gen_sms_code error for {phone}: {e}')
-	return {
-		"status": "error",
-		"data": {
-			"message": f"发送验证码出错: {e}"
-		}
-	}
-if xx is None:
-	return {
-		"status": "error",
-		"data": {
-			"message": "发送验证码出错，请检查短信模板配置和百度API连接"
-		}
-	}
-id, code = xx
-debug(f'{id=},{code=}')
-return {
-	"status": "ok",
-	"data": {
-		"message": "短信码已生成",
-		"key": id
-	}
-}
+    debug(f'gen_sms_code error: {e}')
+    exception(f'gen_sms_code error for {phone}: {e}')
+    return {
+        "status": "error",
+        "data": {
+            "message": f"发送验证码出错: {e}"
+        }
+    }
