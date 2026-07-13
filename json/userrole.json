@@ -4,7 +4,14 @@
     "params": {
         "browserfields": {
             "exclouded": ["id", "orgid"],
-            "alters": {}
+            "alters": {
+                "roleid": {
+                    "uitype": "code",
+                    "dataurl": "{{entire_url('/rbac/api/get_search_roleid.dspy')}}",
+                    "textField": "text",
+                    "valueField": "value"
+                }
+            }
         },
         "editexclouded": [
             "id",
