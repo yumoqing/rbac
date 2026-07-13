@@ -8,8 +8,8 @@
                 "roleid": {
                     "uitype": "code",
                     "dataurl": "{{entire_url('/rbac/api/get_search_roleid.dspy')}}",
-                    "textField": "text",
-                    "valueField": "value"
+                    "valueField": "value",
+                    "textField": "text"
                 }
             }
         },
