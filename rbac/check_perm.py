@@ -55,6 +55,8 @@ async def sor_get_org_users(sor, orgid):
 	return []
 
 async def create_org(sor, ns, orgtypes=[]):
+	if not ns.get('orgname'):
+		ns.orgname = ns.id  # fallback: use id as orgname
 	await sor.C('organization', ns)
 	if orgtypes == []:
 		orgtypes = ['customer']
