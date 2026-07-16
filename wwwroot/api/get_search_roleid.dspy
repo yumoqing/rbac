@@ -1,30 +1,12 @@
-"""Return role options filtered by the current user's org_type.
-Used by userrole CRUD form to limit roleid dropdown to own org type roles."""
-userorgid = await get_userorgid()
-if not userorgid:
-    return [{'value': '', 'text': '全部'}]
-
+"""Return all role options for dropdown and code display.
+Used by userrole CRUD form and list view."""
 async with get_sor_context(request._run_ns, 'rbac') as sor:
-    # Get user's org_type
-    org_recs = await sor.R('organization', {'id': userorgid})
-    org_type = org_recs[0].org_type if org_recs else ''
-    
-    # If no org_type or owner-type (org 0), show all roles
-    if not org_type or userorgid == '0':
-        recs = await sor.sqlExe(
-            "SELECT id, CONCAT(orgtypeid, '.', name) as name FROM role "
-            "WHERE id NOT IN ('anonymous', 'any', 'logined') "
-            "AND orgtypeid != '*' AND name != '*' "
-            "AND orgtypeid IS NOT NULL AND name IS NOT NULL "
-            "ORDER BY orgtypeid, name", {})
-    else:
-        # Filter to user's org_type only
-        recs = await sor.sqlExe(
-            "SELECT id, CONCAT(orgtypeid, '.', name) as name FROM role "
-            "WHERE id NOT IN ('anonymous', 'any', 'logined') "
-            "AND orgtypeid = ${ot}$ AND name != '*' AND name IS NOT NULL "
-            "ORDER BY name",
-            {'ot': org_type})
+    recs = await sor.sqlExe(
+        "SELECT id, CONCAT(orgtypeid, '.', name) as name FROM role "
+        "WHERE id NOT IN ('anonymous', 'any', 'logined') "
+        "AND orgtypeid != '*' AND name != '*' "
+        "AND orgtypeid IS NOT NULL AND name IS NOT NULL "
+        "ORDER BY orgtypeid, name", {})
     
     result = [{'value': '', 'text': '全部'}]
     for r in recs:
