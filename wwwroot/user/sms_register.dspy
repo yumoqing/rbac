@@ -92,18 +92,6 @@ db = DBPools()
 dbname = get_module_dbname('rbac')
 try:
     async with db.sqlorContext(dbname) as sor:
-        # 检查手机号是否已注册
-        existing = await sor.R('users', {'mobile': mobile})
-        if existing:
-            return {
-                "widgettype": "Error",
-                "options": {
-                    "timeout": 5,
-                    "title": "注册失败",
-                    "message": "该手机号已注册，请直接登录"
-                }
-            }
-
         # 检查用户名是否已存在
         existing_user = await sor.R('users', {'username': username})
         if existing_user:
