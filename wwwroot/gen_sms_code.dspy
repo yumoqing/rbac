@@ -1,4 +1,3 @@
-# TEST MODE: 不发送真实短信，返回固定验证码 123456
 phone = params_kw.cellphone
 if phone is None:
     return {
@@ -8,24 +7,20 @@ if phone is None:
         }
     }
 try:
-    code = '123456'
-    code_id = getID()
-    from datetime import datetime, timedelta
-    expire_time = datetime.now() + timedelta(minutes=5)
-    env = request._run_ns
-    async with get_sor_context(env, 'smssend') as sor:
-        await sor.C('validatecode', {
-            'id': code_id,
-            'vcode': code,
-            'expire_time': expire_time,
-            'del_flg': '0',
-            'create_at': datetime.now()
-        })
-    debug(f'TEST MODE: code_id={code_id}, code={code}, phone={phone}')
+    result = await sms_engine.generate_sms_code(phone)
+    if result is None:
+        return {
+            "status": "error",
+            "data": {
+                "message": "短信发送失败，请稍后重试"
+            }
+        }
+    code_id, code = result
+    debug(f'sms sent: code_id={code_id}, phone={phone}')
     return {
         "status": "ok",
         "data": {
-            "message": f"测试模式: 验证码 {code}",
+            "message": "验证码已发送",
             "key": code_id
         }
     }
