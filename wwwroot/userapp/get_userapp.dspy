@@ -1,0 +1,89 @@
+
+ns = params_kw.copy()
+
+
+debug(f'get_userapp.dspy:{ns=}')
+if not ns.get('page'):
+	ns['page'] = 1 
+if not ns.get('sort'):
+
+
+	ns['sort'] = 'appname'
+
+
+
+sql = '''select * from userapp where 1=1  [[filterstr]]'''
+
+filterjson = params_kw.get('data_filter')
+if not filterjson:
+	fields = [ f['name'] for f in [
+    {
+        "name": "id",
+        "title": "id",
+        "type": "str",
+        "length": 32
+    },
+    {
+        "name": "userid",
+        "title": "用户id",
+        "type": "str",
+        "length": 32,
+        "default": "0"
+    },
+    {
+        "name": "appname",
+        "title": "应用名称",
+        "type": "str",
+        "length": 99
+    },
+    {
+        "name": "apikey",
+        "title": "apikey",
+        "type": "str",
+        "length": 400
+    },
+    {
+        "name": "enabled_date",
+        "title": "启用日期",
+        "type": "date"
+    },
+    {
+        "name": "expired_date",
+        "title": "失效日期",
+        "type": "date"
+    },
+    {
+        "name": "allowed_ips",
+        "title": "允许IP集",
+        "type": "str",
+        "length": 200
+    }
+] ]
+	filterjson = default_filterjson(fields, ns)
+filterdic = ns.copy()
+filterdic['filterstr'] = ''
+filterdic['userorgid'] = '${userorgid}$'
+filterdic['userid'] = '${userid}$'
+if filterjson:
+	dbf = DBFilter(filterjson)
+	conds = dbf.gen(ns)
+	if conds:
+		ns.update(dbf.consts)
+		conds = f' and {conds}'
+		filterdic['filterstr'] = conds
+ac = ArgsConvert('[[', ']]')
+vars = ac.findAllVariables(sql)
+NameSpace = {v:'${' + v + '}$' for v in vars if v != 'filterstr' }
+filterdic.update(NameSpace)
+sql = ac.convert(sql, filterdic)
+
+debug(f'{sql=}')
+db = DBPools()
+dbname = get_module_dbname('rbac')
+async with db.sqlorContext(dbname) as sor:
+	r = await sor.sqlPaging(sql, ns) 
+	return r
+return {
+	"total":0,
+	"rows":[]
+}

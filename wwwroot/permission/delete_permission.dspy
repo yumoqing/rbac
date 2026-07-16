@@ -1,0 +1,33 @@
+
+ns = {
+	'id':params_kw['id'],
+}
+
+
+db = DBPools()
+dbname = get_module_dbname('rbac')
+async with db.sqlorContext(dbname) as sor:
+	r = await sor.D('permission', ns)
+	debug('delete success');
+	return {
+		"widgettype":"Message",
+		"options":{
+			"title":"Delete Success",
+			"timeout":3,
+			"cwidth":16,
+			"cheight":9,
+			"message":"ok"
+		}
+	}
+
+debug('Delete failed');
+return {
+	"widgettype":"Error",
+	"options":{
+		"title":"Delete Error",
+		"timeout":3,
+		"cwidth":16,
+		"cheight":9,
+		"message":"failed"
+	}
+}

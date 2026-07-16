@@ -1,0 +1,106 @@
+
+{
+	"id":"orgtypes_tbl",
+	"widgettype":"Tabular",
+	"options":{
+		"width":"100%",
+		"height":"100%",
+
+
+		"title":"机构拥有角色",
+
+
+
+
+		"css":"card",
+
+
+		"editable":{
+
+			"new_data_url":"{{entire_url('add_orgtypes.dspy')}}",
+
+
+			"delete_data_url":"{{entire_url('delete_orgtypes.dspy')}}",
+
+
+			"update_data_url":"{{entire_url('update_orgtypes.dspy')}}"
+
+		},
+
+
+		"data_url":"{{entire_url('./get_orgtypes.dspy')}}",
+
+		"data_method":"GET",
+		"data_params":{{json.dumps(params_kw, indent=4, ensure_ascii=False)}},
+		"row_options":{
+
+
+
+			"browserfields": {
+    "exclouded": [
+        "id",
+        "orgid"
+    ],
+    "cwidth": {},
+    "alters": null
+},
+
+
+			"editexclouded":[
+    "id",
+    "orgid"
+],
+
+			"fields":[
+    {
+        "name": "id",
+        "title": "id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "id"
+    },
+    {
+        "name": "orgid",
+        "title": "机构id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "机构id"
+    },
+    {
+        "name": "orgtypeid",
+        "title": "机构类型",
+        "type": "str",
+        "length": 32,
+        "label": "机构类型",
+        "uitype": "code",
+        "valueField": "orgtypeid",
+        "textField": "orgtypeid_text",
+        "params": {
+            "dbname": "{{get_module_dbname('rbac')}}",
+            "table": "appcodes_kv",
+            "tblvalue": "k",
+            "tbltext": "v",
+            "valueField": "orgtypeid",
+            "textField": "orgtypeid_text",
+            "cond": "parentid='org_type'"
+        },
+        "dataurl": "{{entire_url('/appbase/get_code.dspy')}}"
+    }
+]
+		},  
+
+
+
+		"page_rows":160,
+		"cache_limit":5
+	}
+
+	,"binds":[]
+
+}

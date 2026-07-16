@@ -1,0 +1,40 @@
+
+is_checked = params_kw.get('has_roleid')
+debug(f'{params_kw=}, {is_checked=}')
+dbname = get_module_dbname('rbac')
+if is_checked == 'true':
+	ns = {
+		"id":uuid(),
+		"roleid":params_kw.roleid,
+		"permid":params_kw.permid
+	}
+	db = DBPools();
+	async with db.sqlorContext(dbname) as sor:
+		await sor.C('rolepermission', ns)
+
+	return  {
+		"widgettype":"Message",
+		"options":{
+			"title":"Success",
+			"message":"record add success",
+			"timeout":2
+		}
+	}
+else:
+	ns = {
+		"roleid":params_kw.roleid,
+		"permid":params_kw.permid
+	}
+	sql = "delete from rolepermission where roleid=" + "${" + "roleid" + "}$" + " and permid=" + "${" + "permid" + "}$"
+	db = DBPools()
+	async with db.sqlorContext(dbname) as sor:
+		await sor.sqlExe(sql, ns)
+
+	return  {
+		"widgettype":"Message",
+		"options":{
+			"title":"Success",
+			"message":"delete record success",
+			"timeout":3
+		}
+	}

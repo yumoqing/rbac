@@ -1,0 +1,33 @@
+
+ns = params_kw.copy()
+
+
+debug(f'get_rolepermission.dspy:{ns=}')
+if not ns.get('page'):
+	ns['page'] = 1 
+if not ns.get('sort'):
+
+	ns['sort'] = 'id'
+
+
+ns['sort'] = 'permid_text'
+
+sql = '''select '$[roleid]$' as roleid, 
+case when b.roleid is NULL then 0 else 1 end has_roleid,
+a.id as permid, 
+a.path as permid_text
+from permission a left join 
+(select * from rolepermission where roleid =${roleid}$) b 
+	on a.id = b.permid
+'''
+
+debug(f'{sql=}')
+db = DBPools()
+dbname = get_module_dbname('rbac')
+async with db.sqlorContext(dbname) as sor:
+	r = await sor.sqlPaging(sql, ns) 
+	return r
+return {
+	"total":0,
+	"rows":[]
+}

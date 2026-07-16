@@ -1,0 +1,96 @@
+
+{
+	"id":"userdepartment_tbl",
+	"widgettype":"Tabular",
+	"options":{
+		"width":"100%",
+		"height":"100%",
+
+
+		"title":"用户部门表",
+
+
+
+
+		"css":"card",
+
+
+		"editable":{
+
+			"new_data_url":"{{entire_url('add_userdepartment.dspy')}}",
+
+
+			"delete_data_url":"{{entire_url('delete_userdepartment.dspy')}}",
+
+
+			"update_data_url":"{{entire_url('update_userdepartment.dspy')}}"
+
+		},
+
+
+		"data_url":"{{entire_url('./get_userdepartment.dspy')}}",
+
+		"data_method":"GET",
+		"data_params":{{json.dumps(params_kw, indent=4, ensure_ascii=False)}},
+		"row_options":{
+
+
+
+			"browserfields": {
+    "exclouded": [
+        "id",
+        "userid"
+    ],
+    "cwidth": {},
+    "alters": null
+},
+
+
+			"editexclouded":[
+    "id",
+    "userid"
+],
+
+			"fields":[
+    {
+        "name": "id",
+        "title": "id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "id"
+    },
+    {
+        "name": "userid",
+        "title": "用户id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "用户id"
+    },
+    {
+        "name": "depid",
+        "title": "部门id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "部门id"
+    }
+]
+		},  
+
+
+
+		"page_rows":160,
+		"cache_limit":5
+	}
+
+	,"binds":[]
+
+}

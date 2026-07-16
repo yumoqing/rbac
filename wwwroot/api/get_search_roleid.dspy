@@ -8,7 +8,7 @@ async with get_sor_context(request._run_ns, 'rbac') as sor:
         "AND orgtypeid IS NOT NULL AND name IS NOT NULL "
         "ORDER BY orgtypeid, name", {})
     
-    result = [{'value': '', 'text': '全部'}]
+    result = [{'roleid': '', 'roleid_text': '全部'}]
     for r in recs:
-        result.append({'value': r.id, 'text': r.name})
+        result.append({'roleid': r.id, 'roleid_text': r.name})
     return result

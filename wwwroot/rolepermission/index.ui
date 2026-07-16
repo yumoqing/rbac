@@ -1,0 +1,119 @@
+
+{
+	"id":"rolepermission_tbl",
+	"widgettype":"Tabular",
+	"options":{
+		"width":"100%",
+		"height":"100%",
+
+
+		"title":"角色权限表",
+
+
+
+
+		"css":"card",
+
+
+
+		"data_url":"{{entire_url('./get_rolepermission.dspy')}}",
+
+		"data_method":"GET",
+		"data_params":{{json.dumps(params_kw, indent=4, ensure_ascii=False)}},
+		"row_options":{
+
+
+			"checkField":"has_roleid",
+
+
+			"browserfields": {
+    "exclouded": [
+        "id",
+        "roleid"
+    ],
+    "alters": {
+        "permid": {
+            "cwidth": 60
+        }
+    }
+},
+
+
+			"editexclouded":[
+    "id",
+    "roleid"
+],
+
+			"fields":[
+    {
+        "name": "id",
+        "title": "id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "id"
+    },
+    {
+        "name": "roleid",
+        "title": "角色id",
+        "type": "str",
+        "length": 32,
+        "label": "角色id",
+        "uitype": "code",
+        "valueField": "roleid",
+        "textField": "roleid_text",
+        "params": {
+            "dbname": "{{get_module_dbname('rbac')}}",
+            "table": "(select id, concat(orgtypeid, '.', name) as name from role) as a",
+            "tblvalue": "id",
+            "tbltext": "name",
+            "valueField": "roleid",
+            "textField": "roleid_text"
+        },
+        "dataurl": "{{entire_url('/appbase/get_code.dspy')}}"
+    },
+    {
+        "name": "permid",
+        "title": "权限id",
+        "type": "str",
+        "length": 32,
+        "label": "权限id",
+        "uitype": "code",
+        "valueField": "permid",
+        "textField": "permid_text",
+        "params": {
+            "dbname": "{{get_module_dbname('rbac')}}",
+            "table": "permission",
+            "tblvalue": "id",
+            "tbltext": "path",
+            "valueField": "permid",
+            "textField": "permid_text"
+        },
+        "dataurl": "{{entire_url('/appbase/get_code.dspy')}}",
+        "cwidth": 60
+    }
+]
+		},  
+
+
+
+		"page_rows":160,
+		"cache_limit":5
+	}
+
+	,"binds":[
+    {
+        "wid": "self",
+        "event": "row_check_changed",
+        "actiontype": "urlwidget",
+        "target": "self",
+        "options": {
+            "params": {},
+            "url": "{{entire_url('check_changed.dspy')}}"
+        }
+    }
+]
+
+}

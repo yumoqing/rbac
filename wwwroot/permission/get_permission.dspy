@@ -1,0 +1,16 @@
+
+ns = params_kw.copy()
+sql = '''select * from permission where 1 = 1'''
+id = ns.get('id')
+if id:
+	sql += " and parentid = ${id}$"
+else:
+	sql += " and parentid is null"
+
+sql += " order by path "
+db = DBPools()
+dbname = get_module_dbname('rbac')
+async with db.sqlorContext(dbname) as sor:
+	r = await sor.sqlExe(sql, ns)
+	return r
+return []

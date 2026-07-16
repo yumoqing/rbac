@@ -1,0 +1,134 @@
+
+{
+	"id":"userapp_tbl",
+	"widgettype":"Tabular",
+	"options":{
+		"width":"100%",
+		"height":"100%",
+
+
+		"title":"用户应用",
+
+
+
+
+		"css":"card",
+
+
+		"editable":{
+
+			"new_data_url":"{{entire_url('add_userapp.dspy')}}",
+
+
+			"delete_data_url":"{{entire_url('delete_userapp.dspy')}}",
+
+
+			"update_data_url":"{{entire_url('update_userapp.dspy')}}"
+
+		},
+
+
+		"data_url":"{{entire_url('./get_userapp.dspy')}}",
+
+		"data_method":"GET",
+		"data_params":{{json.dumps(params_kw, indent=4, ensure_ascii=False)}},
+		"row_options":{
+
+
+
+			"browserfields": {
+    "exclouded": [
+        "id",
+        "userid"
+    ],
+    "alters": {}
+},
+
+
+			"editexclouded":[
+    "id",
+    "userid"
+],
+
+			"fields":[
+    {
+        "name": "id",
+        "title": "id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "id"
+    },
+    {
+        "name": "userid",
+        "title": "用户id",
+        "type": "str",
+        "length": 32,
+        "default": "0",
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "用户id"
+    },
+    {
+        "name": "appname",
+        "title": "应用名称",
+        "type": "str",
+        "length": 99,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "应用名称"
+    },
+    {
+        "name": "apikey",
+        "title": "apikey",
+        "type": "str",
+        "length": 400,
+        "cwidth": 18,
+        "uitype": "password",
+        "datatype": "str",
+        "label": "apikey"
+    },
+    {
+        "name": "enabled_date",
+        "title": "启用日期",
+        "type": "date",
+        "length": 0,
+        "uitype": "date",
+        "datatype": "date",
+        "label": "启用日期"
+    },
+    {
+        "name": "expired_date",
+        "title": "失效日期",
+        "type": "date",
+        "length": 0,
+        "uitype": "date",
+        "datatype": "date",
+        "label": "失效日期"
+    },
+    {
+        "name": "allowed_ips",
+        "title": "允许IP集",
+        "type": "str",
+        "length": 200,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "允许IP集"
+    }
+]
+		},  
+
+
+
+		"page_rows":160,
+		"cache_limit":5
+	}
+
+	,"binds":[]
+
+}

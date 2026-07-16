@@ -1,0 +1,120 @@
+
+{
+	"id":"userrole_tbl",
+	"widgettype":"Tabular",
+	"options":{
+		"width":"100%",
+		"height":"100%",
+
+
+		"title":"用户角色",
+
+
+
+
+		"css":"card",
+
+
+		"editable":{
+
+			"new_data_url":"{{entire_url('add_userrole.dspy')}}",
+
+
+			"delete_data_url":"{{entire_url('delete_userrole.dspy')}}",
+
+
+			"update_data_url":"{{entire_url('update_userrole.dspy')}}"
+
+		},
+
+
+		"data_url":"{{entire_url('./get_userrole.dspy')}}",
+
+		"data_method":"GET",
+		"data_params":{{json.dumps(params_kw, indent=4, ensure_ascii=False)}},
+		"row_options":{
+
+
+
+			"browserfields": {
+    "exclouded": [
+        "id",
+        "orgid"
+    ],
+    "alters": {
+        "roleid": {
+            "uitype": "code",
+            "dataurl": "{{entire_url('/rbac/api/get_search_roleid.dspy')}}",
+            "valueField": "roleid",
+            "textField": "roleid_text"
+        }
+    }
+},
+
+
+			"editexclouded":[
+    "id",
+    "userid"
+],
+
+			"fields":[
+    {
+        "name": "id",
+        "title": "用户id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "用户id"
+    },
+    {
+        "name": "userid",
+        "title": "用户id",
+        "type": "str",
+        "length": 32,
+        "label": "用户id",
+        "uitype": "code",
+        "valueField": "userid",
+        "textField": "userid_text",
+        "params": {
+            "dbname": "{{get_module_dbname('rbac')}}",
+            "table": "users",
+            "tblvalue": "id",
+            "tbltext": "username",
+            "valueField": "userid",
+            "textField": "userid_text"
+        },
+        "dataurl": "{{entire_url('/appbase/get_code.dspy')}}"
+    },
+    {
+        "name": "roleid",
+        "title": "角色id",
+        "type": "str",
+        "length": 32,
+        "label": "角色id",
+        "uitype": "code",
+        "valueField": "roleid",
+        "textField": "roleid_text",
+        "params": {
+            "dbname": "{{get_module_dbname('rbac')}}",
+            "table": "(select id, concat(orgtypeid, '.', name) as name from role) as a",
+            "tblvalue": "id",
+            "tbltext": "name",
+            "valueField": "roleid",
+            "textField": "roleid_text"
+        },
+        "dataurl": "{{entire_url('/rbac/api/get_search_roleid.dspy')}}"
+    }
+]
+		},  
+
+
+
+		"page_rows":160,
+		"cache_limit":5
+	}
+
+	,"binds":[]
+
+}

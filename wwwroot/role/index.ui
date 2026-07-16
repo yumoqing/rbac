@@ -1,0 +1,173 @@
+
+{
+	"id":"role_tbl",
+	"widgettype":"Tabular",
+	"options":{
+		"width":"100%",
+		"height":"100%",
+
+
+		"title":" 角色",
+
+
+
+
+			"toolbar":{
+    "tools": [
+        {
+            "selected_row": true,
+            "name": "rolepermission",
+            "icon": "{{entire_url('/imgs/rolepermission.svg')}}",
+            "label": "角色权限"
+        },
+        {
+            "selected_row": true,
+            "name": "users",
+            "icon": "{{entire_url('/imgs/users.svg')}}",
+            "label": "用户"
+        }
+    ]
+},
+
+		"css":"card",
+
+
+		"editable":{
+
+			"new_data_url":"{{entire_url('add_role.dspy')}}",
+
+
+			"delete_data_url":"{{entire_url('delete_role.dspy')}}",
+
+
+			"update_data_url":"{{entire_url('update_role.dspy')}}"
+
+		},
+
+
+		"data_url":"{{entire_url('./get_role.dspy')}}",
+
+		"data_method":"GET",
+		"data_params":{{json.dumps(params_kw, indent=4, ensure_ascii=False)}},
+		"row_options":{
+
+
+
+			"browserfields": {
+    "exclouded": [
+        "id"
+    ],
+    "cwidth": {},
+    "alters": null
+},
+
+
+			"editexclouded":[
+    "id"
+],
+
+			"fields":[
+    {
+        "name": "id",
+        "title": "角色id",
+        "type": "str",
+        "length": 32,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "角色id"
+    },
+    {
+        "name": "orgtypeid",
+        "title": "机构类型",
+        "type": "str",
+        "length": 32,
+        "default": "0",
+        "label": "机构类型",
+        "uitype": "code",
+        "valueField": "orgtypeid",
+        "textField": "orgtypeid_text",
+        "params": {
+            "dbname": "{{get_module_dbname('rbac')}}",
+            "table": "appcodes_kv",
+            "tblvalue": "k",
+            "tbltext": "v",
+            "valueField": "orgtypeid",
+            "textField": "orgtypeid_text",
+            "cond": "parentid='org_type'"
+        },
+        "dataurl": "{{entire_url('/appbase/get_code.dspy')}}"
+    },
+    {
+        "name": "name",
+        "title": "角色名称",
+        "type": "str",
+        "length": 100,
+        "cwidth": 18,
+        "uitype": "str",
+        "datatype": "str",
+        "label": "角色名称"
+    }
+]
+		},  
+
+
+
+		"page_rows":160,
+		"cache_limit":5
+	}
+
+	,"binds":[
+    {
+        "wid": "self",
+        "event": "rolepermission",
+        "actiontype": "urlwidget",
+        "target": "PopupWindow",
+        "popup_options": {
+            "title": "角色权限",
+            "icon": "{{entire_url('/appbase/get_icon.dspy')}}?id=rolepermission",
+            "resizable": true,
+            "height": "70%",
+            "width": "70%"
+        },
+        "params_mapping": {
+            "mapping": {
+                "id": "roleid",
+                "referer_widget": "referer_widget"
+            },
+            "need_other": false
+        },
+        "options": {
+            "method": "POST",
+            "params": {},
+            "url": "{{entire_url('../rolepermission')}}"
+        }
+    },
+    {
+        "wid": "self",
+        "event": "users",
+        "actiontype": "urlwidget",
+        "target": "PopupWindow",
+        "popup_options": {
+            "title": "用户",
+            "icon": "{{entire_url('/appbase/get_icon.dspy')}}?id=users",
+            "resizable": true,
+            "height": "70%",
+            "width": "70%"
+        },
+        "params_mapping": {
+            "mapping": {
+                "id": "roleid",
+                "referer_widget": "referer_widget"
+            },
+            "need_other": false
+        },
+        "options": {
+            "method": "POST",
+            "params": {},
+            "url": "{{entire_url('../users')}}"
+        }
+    }
+]
+
+}
