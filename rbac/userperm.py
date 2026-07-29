@@ -5,6 +5,7 @@ from ahserver.serverenv import ServerEnv
 from appPublic.Singleton import SingletonDecorator
 from appPublic.log import debug, error
 from appPublic.jsonConfig import getConfig
+from appPublic.share_cache import cache_get, cache_invalidate
 
 
 def _cache_enabled(module_name='rbac'):
