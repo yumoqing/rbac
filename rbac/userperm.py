@@ -5,7 +5,7 @@ from ahserver.serverenv import ServerEnv
 from appPublic.Singleton import SingletonDecorator
 from appPublic.log import debug, error
 from appPublic.jsonConfig import getConfig
-from appPublic.share_cache import cache_get, cache_invalidate
+from appPublic.share_cache import cache_get, cache_set, cache_invalidate
 
 
 def _cache_enabled(module_name='rbac'):
@@ -114,6 +114,7 @@ class UserPermissions:
 			userid = getattr(data, 'id', None)
 			if userid:
 				self.invalidate_user_cache(userid)
+				asyncio.ensure_future(cache_invalidate('rbac', f'user_roles:{userid}'))
 				debug(f'RBAC cache invalidated for user id={userid} (users update)')
 		except Exception as e:
 			error(f'RBAC on_user_update handler error: {e}')
@@ -126,6 +127,7 @@ class UserPermissions:
 			userid = getattr(data, 'id', None)
 			if userid:
 				self.invalidate_user_cache(userid)
+				asyncio.ensure_future(cache_invalidate('rbac', f'user_roles:{userid}'))
 				debug(f'RBAC cache invalidated for user id={userid} (users create)')
 		except Exception as e:
 			error(f'RBAC on_user_create handler error: {e}')
@@ -138,6 +140,7 @@ class UserPermissions:
 			userid = getattr(data, 'id', None)
 			if userid:
 				self.invalidate_user_cache(userid)
+				asyncio.ensure_future(cache_invalidate('rbac', f'user_roles:{userid}'))
 				debug(f'RBAC cache invalidated for user id={userid} (users delete)')
 		except Exception as e:
 			error(f'RBAC on_user_delete handler error: {e}')
@@ -148,6 +151,7 @@ class UserPermissions:
 		"""
 		try:
 			self.invalidate_rp_cache()
+			asyncio.ensure_future(cache_invalidate('rbac', 'role_perms'))
 			debug('RBAC role-permission cache invalidated (rolepermission change)')
 		except Exception as e:
 			error(f'RBAC on_rolepermission_change handler error: {e}')
@@ -158,6 +162,7 @@ class UserPermissions:
 		"""
 		try:
 			self.invalidate_rp_cache()
+			asyncio.ensure_future(cache_invalidate('rbac', 'role_perms'))
 			debug('RBAC role-permission cache invalidated (permission change)')
 		except Exception as e:
 			error(f'RBAC on_permission_change handler error: {e}')
@@ -170,6 +175,7 @@ class UserPermissions:
 		try:
 			self.invalidate_all_user_caches()
 			self.invalidate_rp_cache()
+			asyncio.ensure_future(cache_invalidate('rbac', 'role_perms'))
 			debug('RBAC all caches invalidated (role change)')
 		except Exception as e:
 			error(f'RBAC on_role_change handler error: {e}')
@@ -182,6 +188,7 @@ class UserPermissions:
 			userid = getattr(data, 'userid', None)
 			if userid:
 				self.invalidate_user_cache(userid)
+				asyncio.ensure_future(cache_invalidate('rbac', f'user_roles:{userid}'))
 				debug(f'RBAC cache invalidated for user id={userid} (userrole change)')
 		except Exception as e:
 			error(f'RBAC on_userrole_change handler error: {e}')
@@ -271,8 +278,13 @@ order by c.orgtypeid, c.name"""
 				arr.append(r.path)
 				new_caches[k] = arr
 			# Atomic swap: other coroutines see old cache or fully-loaded new cache, never {}
-			self.rp_caches = new_caches
+			self.rp_caches = {k: set(v) for k, v in new_caches.items()}
 			self.rp_cache_loaded_at = now
+			# Share to Redis for cross-worker reuse
+			try:
+				await cache_set("rbac", "role_perms", new_caches, ttl=self.rp_cache_ttl)
+			except Exception:
+				pass
 	
 	async def get_userroles(self, sor, userid):
 		"""Load user roles from database and cache them.
@@ -290,6 +302,11 @@ where a.id = c.userid
 			roles.append(f'*.{r.name}')
 		roles = sorted(list(set(roles)))
 		self.ur_caches.set(userid, roles)
+		# Share to Redis for cross-worker reuse
+		try:
+			await cache_set("rbac", f"user_roles:{userid}", roles, ttl=self.cache_ttl)
+		except Exception:
+			pass
 		return roles
 	
 	def check_roles_path(self, roles, path):
@@ -344,6 +361,19 @@ where a.id = c.userid
 		roles = self.ur_caches.get(userid)
 		if userid is None:
 			roles = ['any', 'anonymous']
+		
+		# L2: Try shared Redis cache before opening DB connection
+		if _cache_enabled('rbac'):
+			if self.rp_caches is None:
+				cached_rp = await cache_get('rbac', 'role_perms', ttl=self.rp_cache_ttl)
+				if cached_rp is not None:
+					self.rp_caches = {k: set(v) for k, v in cached_rp.items()}
+					self.rp_cache_loaded_at = __import__('time').time()
+			if not roles and userid is not None:
+				cached_roles = await cache_get('rbac', f'user_roles:{userid}', ttl=self.cache_ttl)
+				if cached_roles is not None:
+					roles = cached_roles
+					self.ur_caches.set(userid, roles)
 		
 		if not _cache_enabled('rbac') or self.rp_caches is None or not roles:
 			env = ServerEnv()
