@@ -1,7 +1,7 @@
 import time
 
 from traceback import format_exc
-from datetime import datetime
+from datetime import datetime, timedelta
 from aiohttp import BasicAuth
 from sqlor.dbpools import DBPools, get_sor_context
 from appPublic.registerfunction import RegisterFunction
@@ -143,6 +143,30 @@ def get_dbname():
 		return None
 	return f('rbac')
 
+def _req_ip(request):
+	"""安全取客户端 IP（审计用），request 可能是 aiohttp Request 或 dict-like。"""
+	try:
+		return request.get('client_ip', '') if hasattr(request, 'get') else ''
+	except Exception:
+		return ''
+
+
+async def _audit_login(sor, request, user_id, username, action, result='ok'):
+	"""登录审计：检查系统是否安装审计模块(app_audit)，有则写入登录审计日志。
+
+	审计是旁路，模块缺失或写入失败都不阻断登录主流程。
+	"""
+	try:
+		from app_audit import audit_log
+	except ImportError:
+		return  # 未安装审计模块，跳过
+	try:
+		await audit_log(sor, user_id, username, action, result=result,
+						client_ip=_req_ip(request))
+	except Exception as e:
+		debug(f'audit_login({action}) failed: {e}')
+
+
 async def checkUserPassword(request, username, password):
 	"""Authenticate user with password, supporting login lockout mechanism.
 	
@@ -159,6 +183,7 @@ async def checkUserPassword(request, username, password):
 		recs = await sor.sqlExe(sql, {'username': username})
 		if len(recs) < 1:
 			debug(f'User {username} not found')
+			await _audit_login(sor, request, None, username, 'login_fail', 'fail')
 			return False
 		
 		user = recs[0]
@@ -166,6 +191,7 @@ async def checkUserPassword(request, username, password):
 		user_status = getattr(user, 'user_status', '0') or '0'
 		if user_status != '0':
 			debug(f'User {username} is disabled (status={user_status})')
+			await _audit_login(sor, request, user.id, username, 'login_fail', 'fail')
 			return False
 		fail_count = getattr(user, 'login_fail_count', 0) or 0
 		last_fail = getattr(user, 'last_login_fail', None)
@@ -173,21 +199,24 @@ async def checkUserPassword(request, username, password):
 		# Lockout check in Python (DB-agnostic)
 		if _is_locked(fail_count, last_fail):
 			debug(f'User {username} locked out')
+			await _audit_login(sor, request, user.id, username, 'login_fail', 'fail')
 			return False
 		
 		# Verify password with standard SQL
 		sql = "select * from users where username=${username}$ and password=${password}$"
 		recs = await sor.sqlExe(sql, {'username': username, 'password': password})
 		if len(recs) < 1:
-			# Atomic increment -- standard SQL, works on all databases
+			# 5分钟窗口：超过5分钟前的失败次数默认为0（原子 SQL，DB 无关）
 			now_str = _now_ts()
+			stale_before = (datetime.now() - timedelta(seconds=LOGIN_LOCKOUT_DURATION)).strftime('%Y-%m-%d %H:%M:%S')
 			await sor.sqlExe("""
 				UPDATE users 
-				SET login_fail_count = login_fail_count + 1,
+				SET login_fail_count = CASE WHEN last_login_fail IS NULL OR last_login_fail < ${stale}$ THEN 1 ELSE login_fail_count + 1 END,
 				    last_login_fail = ${now}$
 				WHERE id = ${id}$
-			""", {'id': user.id, 'now': now_str})
+			""", {'id': user.id, 'now': now_str, 'stale': stale_before})
 			debug(f'Login failed for {username}, fail_count incremented')
+			await _audit_login(sor, request, user.id, username, 'login_fail', 'fail')
 			return False
 		
 		# Login successful -- atomic reset
@@ -202,6 +231,7 @@ async def checkUserPassword(request, username, password):
 		await user_login(request, user.id, 
 							username=user.username, 
 							userorgid=user.orgid)
+		await _audit_login(sor, request, user.id, user.username, 'login', 'ok')
 		return True
 	return False
 
@@ -215,6 +245,7 @@ async def basic_auth(sor, request):
 	sql = "select * from users where username=${username}$ and password=${password}$"
 	recs = await sor.sqlExe(sql, {'username':username,'password':password})
 	if len(recs) < 1:
+		await _audit_login(sor, request, None, username, 'login_fail', 'fail')
 		return None
 	# Check lockout in Python layer (DB-agnostic)
 	user = recs[0]
@@ -222,11 +253,13 @@ async def basic_auth(sor, request):
 	user_status = getattr(user, 'user_status', '0') or '0'
 	if user_status != '0':
 		debug(f'User {username} is disabled (status={user_status}) via basic auth')
+		await _audit_login(sor, request, user.id, username, 'login_fail', 'fail')
 		return None
 	fail_count = getattr(user, 'login_fail_count', 0) or 0
 	last_fail = getattr(user, 'last_login_fail', None)
 	if _is_locked(fail_count, last_fail):
 		debug(f'User {username} locked out via basic auth')
+		await _audit_login(sor, request, user.id, username, 'login_fail', 'fail')
 		return None
 	# Update last_login on successful basic auth (standard SQL)
 	now_str = _now_ts()
@@ -237,8 +270,9 @@ async def basic_auth(sor, request):
 		WHERE id = ${id}$
 	""", {'id': recs[0].id, 'now': now_str})
 	await user_login(request, recs[0].id, 
-							username=recs[0].username, 
-							userorgid=recs[0].orgid)
+						username=recs[0].username, 
+						userorgid=recs[0].orgid)
+	await _audit_login(sor, request, recs[0].id, recs[0].username, 'login', 'ok')
 	return recs[0].id
 	
 async def getAuthenticationUserid(sor, request):
