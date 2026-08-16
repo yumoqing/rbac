@@ -4,6 +4,18 @@ ns = {
 	"password":password_encode(params_kw.password)
 }
 
+async def _audit_login(sor, user_id, username, action, result='ok'):
+	"""登录审计：检查系统是否有审计模块，有则写入。"""
+	try:
+		from app_audit import audit_log
+	except ImportError:
+		return
+	try:
+		ip = request.get('client_ip', '') if hasattr(request, 'get') else ''
+		await audit_log(sor, user_id, username, action, result=result, client_ip=ip)
+	except Exception:
+		pass
+
 info(f'{ns=}')
 db = DBPools()
 dbname = get_module_dbname('rbac')
@@ -11,6 +23,7 @@ async with db.sqlorContext(dbname) as sor:
 	# Get user record with lockout fields (standard SQL)
 	r = await sor.sqlExe('select * from users where username=${username}$', ns.copy())
 	if len(r) == 0:
+		await _audit_login(sor, None, ns['username'], 'login_fail', 'fail')
 		return {
 			"status": "error",
 			"data": {
@@ -57,14 +70,16 @@ async with db.sqlorContext(dbname) as sor:
 	# Verify password
 	r = await sor.sqlExe('select * from users where username=${username}$ and password=${password}$', ns.copy())
 	if len(r) == 0:
-		# Atomic increment -- standard SQL
+		# 5分钟窗口：超过5分钟前的失败次数默认为0（原子 SQL）
 		now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		stale_before = (datetime.datetime.now() - datetime.timedelta(seconds=300)).strftime('%Y-%m-%d %H:%M:%S')
 		await sor.sqlExe("""
 			UPDATE users 
-			SET login_fail_count = login_fail_count + 1,
+			SET login_fail_count = CASE WHEN last_login_fail IS NULL OR last_login_fail < ${stale}$ THEN 1 ELSE login_fail_count + 1 END,
 			    last_login_fail = ${now}$
 			WHERE id = ${id}$
-		""", {'id': user.id, 'now': now_str})
+		""", {'id': user.id, 'now': now_str, 'stale': stale_before})
+		await _audit_login(sor, user.id, ns['username'], 'login_fail', 'fail')
 		
 		new_fail_count = fail_count + 1
 		if new_fail_count >= 3:
@@ -92,6 +107,7 @@ async with db.sqlorContext(dbname) as sor:
 		WHERE id = ${id}$
 	""", {'id': user.id, 'now': now_str})
 	await remember_user(r[0].id, username=r[0].username, userorgid=r[0].orgid)
+	await _audit_login(sor, r[0].id, r[0].username, 'login', 'ok')
 	return {
 		"status": "ok",
 		"data": { "user": r[0]},
