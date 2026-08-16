@@ -46,11 +46,12 @@ async with db.sqlorContext(dbname) as sor:
 			stored = datetime.datetime.strptime(str(last_fail), '%Y-%m-%d %H:%M:%S')
 			elapsed = (datetime.datetime.now() - stored).total_seconds()
 			if elapsed < 300:
+				await _audit_login(sor, user.id, ns['username'], 'login_fail', 'locked')
 				return {
-			"status": "error",
-			"data": {
-				"message": "Account locked due to too many failed login attempts. Please try again in 5 minutes."
-			},
+				"status": "error",
+				"data": {
+					"message": "Account locked due to too many failed login attempts. Please try again in 5 minutes."
+				},
 					"widgettype":"Error",
 					"options":{
 						"timeout":5,
