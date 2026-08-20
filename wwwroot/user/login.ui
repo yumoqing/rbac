@@ -47,7 +47,10 @@
                                             "target": "self",
                                             "options": {
                                                 "method": "POST",
-                                                "url": "{{entire_url('up_login.dspy')}}"
+                                                "url": "{{entire_url('up_login.dspy')}}",
+                                                "params": {
+                                                    "login_source": "{{params_kw.get('login_source', 'manual')}}"
+                                                }
                                             }
                                         }
                                     ]
@@ -93,7 +96,10 @@
                                                     "target": "self",
                                                     "options": {
                                                         "method": "POST",
-                                                        "url": "{{code_login_url}}"
+                                                        "url": "{{code_login_url}}",
+                                                        "params": {
+                                                            "login_source": "{{params_kw.get('login_source', 'manual')}}"
+                                                        }
                                                     }
                                                 }
                                             ]

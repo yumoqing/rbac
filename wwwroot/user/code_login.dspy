@@ -2,6 +2,45 @@
 # 调用sms_engine验证后完成登录或自动注册
 debug(f'code_login.dspy: {params_kw=}')
 
+def _login_msg(username, welcome):
+	# 登录成功 Message；非用户主动点击登录(login_source=auto，如401自动弹窗)时不刷新页面
+	msg = {
+		"widgettype": "Message",
+		"options": {
+			"timeout": 3,
+			"auto_open": True,
+			"title": "登录成功",
+			"message": welcome
+		},
+		"binds": [
+			{
+				"wid": "self",
+				"event": "dismissed",
+				"actiontype": "urlwidget",
+				"target": "window.user_container",
+				"options": {"url": entire_url('/rbac/user/userinfo.ui')}
+			},
+			{
+				"wid": "self",
+				"event": "dismissed",
+				"actiontype": "script",
+				"target": "body.login_window",
+				"script": "this.destroy()"
+			}
+		]
+	}
+	if params_kw.get('login_source', 'manual') == 'auto':
+		msg["options"]["refresh"] = False
+	else:
+		msg["binds"].append({
+			"wid": "self",
+			"event": "dismissed",
+			"actiontype": "script",
+			"target": "self",
+			"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
+		})
+	return msg
+
 cellphone = params_kw.cell_no
 key = params_kw.codeid
 sms_code = params_kw.check_code
@@ -70,40 +109,7 @@ try:
 					WHERE id = ${id}$
 				""", {'id': r.id, 'now': now_str})
 				await remember_user(r.id, username=r.username, userorgid=r.orgid)
-				return {
-					"widgettype": "Message",
-					"options": {
-						"timeout": 3,
-						"auto_open": True,
-						"title": "登录成功",
-						"message": f"{r.username} 欢迎回来"
-					},
-					"binds": [
-						{
-							"wid": "self",
-							"event": "dismissed",
-							"actiontype": "urlwidget",
-							"target": "window.user_container",
-							"options": {
-								"url": entire_url('/rbac/user/userinfo.ui')
-							}
-						},
-						{
-							"wid": "self",
-							"event": "dismissed",
-							"actiontype": "script",
-							"target": "body.login_window",
-							"script": "this.destroy()"
-						},
-						{
-							"wid": "self",
-							"event": "dismissed",
-							"actiontype": "script",
-							"target": "self",
-							"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
-						}
-					]
-				}
+				return _login_msg(r.username, f"{r.username} 欢迎回来")
 			# 多个用户绑定同一手机号
 			if params_kw.selected_id:
 				for r in recs:
@@ -116,40 +122,7 @@ try:
 							WHERE id = ${id}$
 						""", {'id': r.id, 'now': now_str})
 						await remember_user(r.id, username=r.username, userorgid=r.orgid)
-						return {
-							"widgettype": "Message",
-							"options": {
-								"timeout": 3,
-								"auto_open": True,
-								"title": "登录成功",
-								"message": f"{r.username} 欢迎回来"
-							},
-							"binds": [
-								{
-									"wid": "self",
-									"event": "dismissed",
-									"actiontype": "urlwidget",
-									"target": "window.user_container",
-									"options": {
-										"url": entire_url('/rbac/user/userinfo.ui')
-									}
-								},
-								{
-									"wid": "self",
-									"event": "dismissed",
-									"actiontype": "script",
-									"target": "body.login_window",
-									"script": "this.destroy()"
-								},
-								{
-									"wid": "self",
-									"event": "dismissed",
-									"actiontype": "script",
-									"target": "self",
-									"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
-								}
-							]
-						}
+						return _login_msg(r.username, f"{r.username} 欢迎回来")
 			else:
 				# 返回用户选择列表
 				buttons = []
@@ -221,40 +194,7 @@ try:
 
 		r = d['data']['user']
 		await remember_user(r.id, username=r.username, userorgid=r.orgid)
-		return {
-			"widgettype": "Message",
-			"options": {
-				"timeout": 3,
-				"auto_open": True,
-				"title": "登录成功",
-				"message": f"{r.username} 欢迎"
-			},
-			"binds": [
-				{
-					"wid": "self",
-					"event": "dismissed",
-					"actiontype": "urlwidget",
-					"target": "window.user_container",
-					"options": {
-						"url": entire_url('/rbac/user/userinfo.ui')
-					}
-				},
-				{
-					"wid": "self",
-					"event": "dismissed",
-					"actiontype": "script",
-					"target": "body.login_window",
-					"script": "this.destroy()"
-				},
-				{
-					"wid": "self",
-					"event": "dismissed",
-					"actiontype": "script",
-					"target": "self",
-					"script": "if(bricks.app && bricks.app.dispatch) bricks.app.dispatch('user_logined')"
-				}
-			]
-		}
+		return _login_msg(r.username, f"{r.username} 欢迎")
 except Exception as e:
 	exception(f'code_login error: {e}')
 	return {

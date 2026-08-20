@@ -109,7 +109,8 @@ async with db.sqlorContext(dbname) as sor:
 	""", {'id': user.id, 'now': now_str})
 	await remember_user(r[0].id, username=r[0].username, userorgid=r[0].orgid)
 	await _audit_login(sor, r[0].id, r[0].username, 'login', 'ok')
-	return {
+	login_source = params_kw.get('login_source', 'manual')
+	msg = {
 		"status": "ok",
 		"data": { "user": r[0]},
 		"widgettype":"Message",
@@ -123,15 +124,6 @@ async with db.sqlorContext(dbname) as sor:
 		"binds":[
 		{
 			"wid":"self",
-			"event":"dismissed",
-			"actiontype":"urlwidget",
-			"target":"window",
-			"options":{
-				"url":entire_url('/index.ui')
-			}
-		},
-		{
-			"wid":"self",
 			"event":"opened",
 			"actiontype":"script",
 			"target":"window.login_window",
@@ -139,6 +131,21 @@ async with db.sqlorContext(dbname) as sor:
 		}
 		]
 	}
+	if login_source == 'auto':
+		# 非用户主动点击登录(如401自动弹窗)：不刷新页面，标记不刷新
+		msg["options"]["refresh"] = False
+	else:
+		# 用户主动点击登录：登录成功后刷新页面(跳转/index.ui)
+		msg["binds"].insert(0, {
+			"wid":"self",
+			"event":"dismissed",
+			"actiontype":"urlwidget",
+			"target":"window",
+			"options":{
+				"url":entire_url('/index.ui')
+			}
+		})
+	return msg
 return {
 			"status": "error",
 			"data": {
