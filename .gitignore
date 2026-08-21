@@ -31,8 +31,6 @@ wwwroot/provider/
 wwwroot/reseller/
 wwwroot/role/
 wwwroot/rolepermission/
-wwwroot/userapp/
-wwwroot/userdepartment/
 wwwroot/userrole/
 wwwroot/users/
 mysql.ddl.sql

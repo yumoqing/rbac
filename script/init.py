@@ -70,8 +70,7 @@ type_roles = {
 }
 
 rbac_tables = [
-	"organization", "orgtypes", "role", "users", "userrole", "rolepermission", "permission", 
-	"userapp", "userdepartment" ]
+	"organization", "orgtypes", "role", "users", "userrole", "rolepermission", "permission" ]
 	
 role_perms = {
 	'superuser': [

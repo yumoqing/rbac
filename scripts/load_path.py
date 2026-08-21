@@ -71,8 +71,6 @@ PATHS_LOGINED = [
     f"/{MOD}/user/edit_profile.dspy",
     f"/{MOD}/user/save_profile.dspy",
     f"/{MOD}/user/wechat_login.ui",
-    f"/{MOD}/userapp",
-    f"/{MOD}/userdepartment",
     f"/{MOD}/userrole",
     f"/{MOD}/users",
     f"/{MOD}/usersync",
