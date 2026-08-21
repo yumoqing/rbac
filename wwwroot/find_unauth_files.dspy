@@ -1,7 +1,8 @@
 wwwroot = params_kw.get('wwwroot', '').strip()
 
 async with get_sor_context(request._run_ns, 'rbac') as sor:
-	title, message, is_error = await request._run_ns.scan_unauth_files(sor, wwwroot, __file__)
+	# dspy 运行时无 __file__，用 ahserver 注入的 ref_real_path（本 dspy 文件真实绝对路径）
+	title, message, is_error = await request._run_ns.scan_unauth_files(sor, wwwroot, request._run_ns.ref_real_path)
 
 if is_error:
 	return UiError(title=title, message=message)

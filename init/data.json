@@ -1,0 +1,23 @@
+{
+    "appcodes": [
+        {
+            "id": "user_status",
+            "name": "用户状态",
+            "hierarchy_flg": "0"
+        }
+    ],
+    "appcodes_kv": [
+        {
+            "id": "user_status_0",
+            "parentid": "user_status",
+            "k": "0",
+            "v": "可用"
+        },
+        {
+            "id": "user_status_1",
+            "parentid": "user_status",
+            "k": "1",
+            "v": "禁用"
+        }
+    ]
+}
