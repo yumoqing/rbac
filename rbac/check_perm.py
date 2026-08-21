@@ -100,6 +100,20 @@ async def create_user(sor, ns, roles=[]):
 			})
 
 async def register_user(sor, ns):
+	# 注册开关检查：appbase params 表 register_open（1=开放，0=关闭），superuser 可在参数管理界面改
+	try:
+		pro = await sor.R('params', {'params_name': 'register_open'})
+		if pro and str(pro[0].params_value).strip() == '0':
+			return {
+				"status": "error",
+				"data": {
+					"message": "注册暂未开放，请联系管理员",
+					"user": None
+				}
+			}
+	except Exception as e:
+		debug(f'register_user: register_open check skipped: {e}')
+
 	if ns.password != ns.cfm_password:
 		debug('password not match')
 		return False
