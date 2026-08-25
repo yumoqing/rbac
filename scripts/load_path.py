@@ -37,7 +37,6 @@ PATHS_LOGINED = [
     f"/{MOD}/add_provider.dspy",
     f"/{MOD}/add_provider.ui",
     f"/{MOD}/add_reseller.dspy",
-    f"/{MOD}/add_superuser.dspy",
     f"/{MOD}/find_unauth_files.dspy",
     f"/{MOD}/get_all_roles.dspy",
     f"/{MOD}/get_normal_roles.dspy",
