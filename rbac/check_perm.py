@@ -144,6 +144,20 @@ async def register_user(sor, ns):
 		}
 	]
 	await create_user(sor, ns, roles)
+	# 自动开客户账户（accounting 模块）。旁路，不阻断注册主流程：
+	# 模块未加载/开户失败都只记日志，注册本身成功。
+	try:
+		env = ServerEnv()
+		open_fn = getattr(env, 'openCustomerAccounts', None)
+		get_dbname_fn = get_serverenv('get_module_dbname')
+		if open_fn is not None and get_dbname_fn is not None:
+			acc_dbname = get_dbname_fn('accounting')
+			async with DBPools().sqlorContext(acc_dbname) as acc_sor:
+				await open_fn(acc_sor, '0', ns.orgid)
+				await acc_sor.sqlExe("COMMIT", {})
+			debug(f'register_user: customer accounts opened for org({ns.orgid})')
+	except Exception as e:
+		debug(f'register_user: auto open customer accounts skipped: {e}')
 	return {
 		"status": "ok",
 		"data": {
