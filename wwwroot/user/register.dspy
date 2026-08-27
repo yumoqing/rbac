@@ -62,8 +62,8 @@ async with db.sqlorContext(dbname) as sor:
                         'id': getID(),
                         'customerid': orgid,
                         'resellerid': reseller_id,
-                        'sale_id': None,
-                        'promo_code_id': None,
+                        'sale_id': '',
+                        'promo_code_id': '',
                         'bind_type': '3',
                     })
                     debug(f'register: free customer {orgid} bind created (reseller={reseller_id})')
