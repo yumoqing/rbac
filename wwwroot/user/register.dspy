@@ -52,7 +52,7 @@ async with db.sqlorContext(dbname) as sor:
         # 非促销码注册: 创建自由客户归属记录 (bind_type=3 域名注册)
         try:
             reseller_id = parentid or '0'
-            async with DBPools().sqlorContext('discount') as disc_sor:
+            async with DBPools().sqlorContext(get_module_dbname('discount')) as disc_sor:
                 existing = await disc_sor.sqlExe(
                     'SELECT id FROM discount_customer_bind WHERE customerid = ${cid}$',
                     {'cid': orgid}
