@@ -135,15 +135,19 @@ async with db.sqlorContext(dbname) as sor:
 		# 非用户主动点击登录(如401自动弹窗)：不刷新页面，标记不刷新
 		msg["options"]["refresh"] = False
 	else:
-		# 用户主动点击登录：登录成功后刷新页面(跳转/index.ui)
+		# 用户主动点击登录：登录成功后刷新页面(跳转/index.ui)。
+		# 注意（2026-09-08 修）：旧实现用 actiontype=urlwidget target="window" ——
+		# bricks 里 'window' 解析为 bricks.app 根控件而非浏览器窗口，实际是
+		# in-place 渲染 index.ui 进当前文档。桌面文档即 shell 页（baseURI 正确）
+		# 无感；但从 login.ui 文档进入时 baseURI 停留在 /rbac/user/，后续所有
+		# 根绝对 urlwidget 解析错误 → 反复 401/500 → 登录窗反复打开。
+		# 故：文档是登录页时做真实浏览器跳转；否则保持原 in-place 语义。
 		msg["binds"].insert(0, {
 			"wid":"self",
 			"event":"dismissed",
-			"actiontype":"urlwidget",
-			"target":"window",
-			"options":{
-				"url":entire_url('/index.ui')
-			}
+			"actiontype":"script",
+			"target":"self",
+			"script":"if(window.location.pathname.indexOf('login.ui')>=0){window.location.replace('/');return;}var w=bricks.getWidgetById('window',this);if(w){bricks.widgetBuild({widgettype:'urlwidget',options:{url:'/index.ui'}},w).then(function(nw){if(nw){w.clear_widgets();w.add_widget(nw);}});}"
 		})
 	return msg
 return {
