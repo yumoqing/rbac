@@ -83,6 +83,7 @@ PATHS_LOGINED = [
 # 管理员对他人的敏感操作端点，绝不进 PATHS_LOGINED（否则任何登录用户可重置他人密码）。
 # 与存量 /rbac/users/*.dspy（enable/disable/update）的 *.admin 授权口径一致。
 PATHS_ADMIN = [
+    f"/{MOD}/admin_reset_password.ui",
     f"/{MOD}/api/admin_reset_password.dspy",
     f"/{MOD}/api/clear_login_fail.dspy",
 ]

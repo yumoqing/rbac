@@ -52,36 +52,60 @@
                 }
             }
         ],
-		"binds": [
-			{
-				"wid": "self",
-				"event": "enable_user",
-				"actiontype": "script",
-				"target": "self",
-				"script": "var tid=bricks.getWidgetById('users_tbl');var d=tid.select_row.user_data;fetch('/rbac/users/enable_user.dspy?id='+d.id,{method:'POST'}).then(function(r){return r.json()}).then(function(r){if(r.widgettype==='Message'){tid.render({})}else{bricks.show_error(r.options)}})"
-			},
-			{
-				"wid": "self",
-				"event": "disable_user",
-				"actiontype": "script",
-				"target": "self",
-				"script": "var tid=bricks.getWidgetById('users_tbl');var d=tid.select_row.user_data;fetch('/rbac/users/disable_user.dspy?id='+d.id,{method:'POST'}).then(function(r){return r.json()}).then(function(r){if(r.widgettype==='Message'){tid.render({})}else{bricks.show_error(r.options)}})"
-			},
-			{
-				"wid": "self",
-				"event": "reset_password",
-				"actiontype": "script",
-				"target": "self",
-				"script": "var tid=bricks.getWidgetById('users_tbl');var d=tid.select_row.user_data;var np=prompt('为用户 '+d.username+' 设置新密码（至少8位）:');if(!np){return}var cp=prompt('再次输入以确认:');if(!cp){return}fetch('/rbac/api/admin_reset_password.dspy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userid:d.id,new_password:np,cfm_password:cp})}).then(function(r){return r.json()}).then(function(r){if(r.widgettype==='Message'){bricks.show_message(r.options);tid.render({})}else{bricks.show_error(r.options)}})"
-			},
-			{
-				"wid": "self",
-				"event": "clear_login_fail",
-				"actiontype": "script",
-				"target": "self",
-				"script": "var tid=bricks.getWidgetById('users_tbl');var d=tid.select_row.user_data;fetch('/rbac/api/clear_login_fail.dspy?id='+d.id,{method:'POST'}).then(function(r){return r.json()}).then(function(r){if(r.widgettype==='Message'){bricks.show_message(r.options);tid.render({})}else{bricks.show_error(r.options)}})"
-			}
-		],
+        "binds": [
+            {
+                "wid": "self",
+                "event": "enable_user",
+                "actiontype": "script",
+                "target": "self",
+                "script": "var tid=bricks.getWidgetById('users_tbl');var d=tid.select_row.user_data;fetch('/rbac/users/enable_user.dspy?id='+d.id,{method:'POST'}).then(function(r){return r.json()}).then(function(r){if(r.widgettype==='Message'){tid.render({})}else{bricks.show_error(r.options)}})"
+            },
+            {
+                "wid": "self",
+                "event": "disable_user",
+                "actiontype": "script",
+                "target": "self",
+                "script": "var tid=bricks.getWidgetById('users_tbl');var d=tid.select_row.user_data;fetch('/rbac/users/disable_user.dspy?id='+d.id,{method:'POST'}).then(function(r){return r.json()}).then(function(r){if(r.widgettype==='Message'){tid.render({})}else{bricks.show_error(r.options)}})"
+            },
+            {
+                "wid": "self",
+                "event": "reset_password",
+                "actiontype": "urlwidget",
+                "target": "PopupWindow",
+                "popup_options": {
+                    "title": "重置密码",
+                    "resizable": true,
+                    "height": "60%",
+                    "width": "40%"
+                },
+                "options": {
+                    "method": "POST",
+                    "params": {},
+                    "url": "{{entire_url('/rbac/admin_reset_password.ui')}}"
+                }
+            },
+            {
+                "wid": "self",
+                "event": "clear_login_fail",
+                "actiontype": "urlwidget",
+                "target": "self",
+                "conform": {
+                    "title": "清除登录次数",
+                    "message": "确认清除该用户的连续登录失败次数？"
+                },
+                "options": {
+                    "method": "POST",
+                    "params": {},
+                    "url": "{{entire_url('/rbac/api/clear_login_fail.dspy')}}"
+                },
+                "params_mapping": {
+                    "mapping": {
+                        "id": "id"
+                    },
+                    "need_others": false
+                }
+            }
+        ],
         "subtables": [
 			{
 				"field":"userid",

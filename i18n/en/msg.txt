@@ -131,3 +131,7 @@ Cancel: Cancel
 只读用户: Read-Only User
 访问控制: Access Control
 最后登录: Last Login
+清除登录次数: Clear Login Fail Count
+新密码: New Password
+确认清除该用户的连续登录失败次数？: Clear the consecutive login failure count of this user?
+为选中用户设置新密码（至少8位）: Set a new password (at least 8 characters) for the selected user
