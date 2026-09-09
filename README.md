@@ -56,11 +56,12 @@
 - 管理端：`add_adminuser.dspy`、`add_provider.dspy`、`get_provider.dspy`、`add_reseller.dspy`、`get_reseller.dspy`
 - 角色权限查询：`get_all_roles.dspy`、`get_normal_roles.dspy`、`list_path_roles.dspy`、`find_unauth_files.dspy`（扫描 wwwroot 中未注册权限的文件）、`api/get_search_roleid.dspy`
 - 用户 CRUD：`api/add_user.dspy`、`api/update_user.dspy`
+- 管理员对他人的敏感操作（仅 `* admin` 角色，见 load_path.py 的 PATHS_ADMIN）：`api/admin_reset_password.dspy`（重置他人密码，禁止对自己操作，自己改密走自助入口）、`api/clear_login_fail.dspy`（清除连续登录失败次数）、`admin_reset_password.ui`（PopupWindow 表单，隐藏字段 userid 由 `params_kw.get('id')` 服务端注入）
 - 缓存刷新：`refresh_userperm.dspy`
 - 用户同步：`usersync/index.dspy`（把 rbac 用户同步到 dapi 并生成 API key，接口文档见 `docs/userasync-api.md`）
 - UI：`admin_menu.ui`、`list_path_roles.ui`、`user/login.ui`、`user/user_panel.ui`、`stat_*.ui`（用户/机构统计卡片）等
 
-权限注册分三档：`any`（免登录，见 `scripts/load_path.py` 的 PATHS_ANY）、`logined`（登录即可）、具体角色（如 `owner.superuser`，见 `script/register_rbac_tools_perm.py`）。
+权限注册分三档：`any`（免登录，见 `scripts/load_path.py` 的 PATHS_ANY）、`logined`（登录即可）、具体角色（如 `owner.superuser`，见 `script/register_rbac_tools_perm.py`；全局管理员档 `* admin` 见 PATHS_ADMIN）。`set_role_perm.py`（pipeline-app 根目录）按 `[orgtypeid.]name` 查 role 表取真实 roleid，特殊角色 any/anonymous/logined 用字面 id。
 
 ## load 注册函数
 
