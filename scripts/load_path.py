@@ -79,6 +79,14 @@ PATHS_LOGINED = [
     f"/{MOD}/api/get_search_roleid.dspy",
 ]
 
+# admin — 仅全局管理员（role: orgtypeid='*' name='admin'）。
+# 管理员对他人的敏感操作端点，绝不进 PATHS_LOGINED（否则任何登录用户可重置他人密码）。
+# 与存量 /rbac/users/*.dspy（enable/disable/update）的 *.admin 授权口径一致。
+PATHS_ADMIN = [
+    f"/{MOD}/api/admin_reset_password.dspy",
+    f"/{MOD}/api/clear_login_fail.dspy",
+]
+
 
 def register_paths():
     for path in PATHS_ANY:
@@ -88,6 +96,10 @@ def register_paths():
     for path in PATHS_LOGINED:
         subprocess.run(["py3/bin/python", "set_role_perm.py", "logined", path])
         print(f"  logined: {path}")
+
+    for path in PATHS_ADMIN:
+        subprocess.run(["py3/bin/python", "set_role_perm.py", "admin", path])
+        print(f"  admin: {path}")
 
 
 if __name__ == "__main__":

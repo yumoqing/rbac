@@ -1,0 +1,64 @@
+ns = params_kw.copy()
+
+userorgid = await get_userorgid()
+if not userorgid:
+	return {
+		"widgettype":"Error",
+		"options":{
+			"title":"Authorization Error",
+			"timeout":3,
+			"cwidth":16,
+			"cheight":9,
+			"message":"Please login"
+		}
+	}
+
+target_id = ns.get('id')
+if not target_id:
+	return {"widgettype":"Error","options":{"title":"Parameter Error","cwidth":16,"cheight":9,"timeout":3,"message":"missing id"}}
+
+db = DBPools()
+dbname = get_module_dbname('rbac')
+try:
+	async with db.sqlorContext(dbname) as sor:
+		recs = await sor.sqlExe(
+			"SELECT id, username, orgid FROM users WHERE id=${id}$",
+			{"id": target_id})
+		await sor.sqlExe("COMMIT", {})
+		if not recs:
+			return {"widgettype":"Error","options":{"title":"Clear Login Fail Error","cwidth":16,"cheight":9,"timeout":3,"message":"user not exist"}}
+		rec = recs[0]
+		if rec.orgid and rec.orgid != userorgid:
+			return {"widgettype":"Error","options":{"title":"Clear Login Fail Error","cwidth":16,"cheight":9,"timeout":3,"message":"Record no exist or with wrong ownership"}}
+
+		await sor.sqlExe(
+			"UPDATE users SET login_fail_count = 0, last_login_fail = NULL WHERE id=${id}$",
+			{"id": target_id})
+		await sor.sqlExe("COMMIT", {})
+
+		# 审计：操作留痕（失败不阻断主流程）
+		try:
+			from app_audit import audit_log
+			op_id = await get_user()
+			await audit_log(sor, str(op_id or ''), '', 'login_fail_clear',
+					target=f'users:{rec.username}',
+					detail='admin clear login_fail_count',
+					client_ip=request.get('client_ip', '') if hasattr(request, 'get') else '')
+			await sor.sqlExe("COMMIT", {})
+		except Exception as ae:
+			debug(f'clear_login_fail audit failed: {ae}')
+
+		debug(f'clear_login_fail ok: target={rec.username} operator_orgid={userorgid}')
+		return {
+			"widgettype":"Message",
+			"options":{
+				"title":"Clear Login Fail Success",
+				"cwidth":16,
+				"cheight":9,
+				"timeout":3,
+				"message":f"user {rec.username} login fail count cleared"
+			}
+		}
+except Exception as e:
+	debug(f'clear_login_fail error: {format_exc()}')
+	return {"widgettype":"Error","options":{"title":"Clear Login Fail Error","cwidth":16,"cheight":9,"timeout":5,"message":str(e)}}
